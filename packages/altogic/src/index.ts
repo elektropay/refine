@@ -5,8 +5,8 @@ import {
     HttpError,
     CrudOperators,
     CrudFilters,
-} from "@pankod/refine";
-import { CrudSorting } from "@pankod/refine/dist/interfaces";
+} from "@pankod/refine-core";
+import { CrudSorting } from "@pankod/refine-core/dist/interfaces";
 
 const axiosInstance = axios.create();
 
@@ -44,9 +44,9 @@ const mapOperator = (operator: CrudOperators): string => {
             return "<=";
         case "ne":
             return "!=";
+        default:
+            throw Error(`Operator ${operator} is not supported`);
     }
-
-    return "";
 };
 
 const generateSort = (sort?: CrudSorting) => {

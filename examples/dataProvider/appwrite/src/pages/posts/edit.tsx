@@ -1,15 +1,16 @@
 import React, { useState } from "react";
+import { IResourceComponentsProps } from "@pankod/refine-core";
+
 import {
     Edit,
     Form,
     Input,
-    IResourceComponentsProps,
     RcFile,
     Select,
     Upload,
     useForm,
     useSelect,
-} from "@pankod/refine";
+} from "@pankod/refine-antd";
 
 import ReactMarkdown from "react-markdown";
 import ReactMde from "react-mde";
@@ -24,10 +25,10 @@ export const PostsEdit: React.FC<IResourceComponentsProps> = () => {
 
     const postData = queryResult?.data?.data;
     const { selectProps: categorySelectProps } = useSelect<ICategory>({
-        resource: "6180e6efb14df",
+        resource: "61c43adc284ac",
         defaultValue: postData?.categoryId,
         optionLabel: "title",
-        optionValue: "$id",
+        optionValue: "id",
     });
 
     const [selectedTab, setSelectedTab] =

@@ -83,14 +83,14 @@ This tutorial assumes your project is configured for absolute imports. Since CRA
 First, run the **superplate** with the following command:
 
 ```
-npx superplate-cli tutorial
+npx superplate-cli -p refine-react tutorial
 ```
 
 Select the following options to complete the _CLI wizard_:
 
 ```
 ? Select your project type:
-❯ refine
+❯ refine-react
 
 ? What will be the name of your app:
 tutorial
@@ -174,6 +174,10 @@ Fake REST API is based on [JSON Server Project](https://github.com/typicode/json
 -   [Hasura](https://github.com/pankod/refine/tree/master/packages/hasura)
 -   [Appwrite](https://github.com/pankod/refine/tree/master/packages/appwrite)
 -   [Altogic](https://github.com/pankod/refine/tree/master/packages/altogic)
+
+### Community ❤️
+-   [Firebase](https://github.com/rturan29/refine-firebase) by [rturan29](https://github.com/rturan29)
+-   [Directus](https://github.com/tspvivek/refine-directus) by [tspvivek](https://github.com/tspvivek)
 
 [Refer to the `dataProvider` documentation for detailed usage. &#8594](/api-references/providers/data-provider.md)
 :::
@@ -335,7 +339,7 @@ Let's create a **Page** component to fetch **posts** and display them as a table
 
 First, we'll need an interface to work with the data from the API endpoint.
 
-Create a new folder named _"interfaces"_ under _"/src"_ if you don't already have one. Then create a _"index.d.ts"_ file with the following code:
+Create a new folder named _"interface"_ under _"/src"_ if you don't already have one. Then create a _"index.d.ts"_ file with the following code:
 
 ```ts title="interfaces/index.d.ts"
 export interface IPost {
@@ -423,7 +427,7 @@ import routerProvider from "@pankod/refine-react-router";
 import dataProvider from "@pankod/refine-simple-rest";
 
 // highlight-next-line
-import { PostList } from "./pages";
+import { PostList } from "./pages/posts";
 
 export const App: React.FC = () => {
     return (
@@ -484,7 +488,7 @@ The category title data can be obtained from the `/categories` endpoint for each
 
 <br />
 
-At this point, we need to join records from different resources. For this, we're going to use the refine hook `useMany`.
+At this point, we need to join records from different resources. For this, we're goint to use the refine hook `useMany`.
 
 Before we start, just edit our interface for the new `ICategory` type:
 
@@ -620,8 +624,8 @@ import {
     Table,
     useTable,
     useMany,
-    // highlight-start
     FilterDropdown,
+    // highlight-start
     Select,
     useSelect,
     // highlight-end
@@ -698,7 +702,7 @@ export const PostList: React.FC = () => {
 };
 ```
 
-✳️ `<FilterDropdown>` component serves as a bridge between its child input and **refine**'s `useTable` hook. It passes child's input value to `useTable` using `filterDropdown`'s embedded props and provides a filter button.
+✳️ `<FilterDropdown>` component serves as a bridge between its child input and **refine**'s `useTable` hook. It passes childs input value to `useTable` using `filterDropdown`'s embedded props and provides a filter button.
 
 [Refer to the `<FilterDropdown>` documentation for detailed usage. &#8594](api-references/components/filter-dropdown)
 
@@ -764,7 +768,7 @@ import routerProvider from "@pankod/refine-react-router";
 import dataProvider from "@pankod/refine-simple-rest";
 
 // highlight-next-line
-import { PostList, PostShow } from "./pages";
+import { PostList, PostShow } from "./pages/posts";
 
 export const App: React.FC = () => {
     return (
@@ -867,10 +871,10 @@ export const PostList: React.FC = () => {
                         </FilterDropdown>
                     )}
                 />
-                // highlight-start
                 <Table.Column<IPost>
                     title="Actions"
                     dataIndex="actions"
+                    // highlight-start
                     render={(_text, record): React.ReactNode => {
                         return (
                             <ShowButton
@@ -880,8 +884,8 @@ export const PostList: React.FC = () => {
                             />
                         );
                     }}
+                    // highlight-end
                 />
-                // highlight-end
             </Table>
         </List>
     );
@@ -978,7 +982,7 @@ import routerProvider from "@pankod/refine-react-router";
 import dataProvider from "@pankod/refine-simple-rest";
 
 // highlight-next-line
-import { PostList, PostShow, PostEdit } from "./pages";
+import { PostList, PostShow, PostEdit } from "./pages/posts";
 
 export const App: React.FC = () => {
     return (
@@ -1000,9 +1004,9 @@ export const App: React.FC = () => {
 };
 ```
 
-We are going to need an _edit_ button on each row to display the `<PostEdit>` component. **refine** doesn't automatically add one, so we have to update our `<PostList>` component to add an `<EditButton>` for each record:
+We are going to need an _edit_ button on each row to diplay the `<PostEdit>` component. **refine** doesn't automatically add one, so we have to update our `<PostList>` component to add a `<EditButton>` for each record:
 
-```tsx title="pages/posts/list.tsx"
+```tsx title="components/pages/posts.tsx"
 import {
     List,
     TextField,
@@ -1131,7 +1135,7 @@ In edit page, `useForm` hook initializes the form with current record values.
 
 ✳️ Form data is set automatically, whenever children inputs `<Form.Item>`'s are edited.
 
-✳️ Save button submits the form by executing the `useUpdate` method provided by the [`dataProvider`](api-references/providers/data-provider.md). After a successful response, the application will be redirected to the listing page.
+✳️ Save button submits the form by executing the `useUpdate` method provided by the [`dataProvider`](api-references/providers/data-provider.md). After a succesfull response, the application will be redirected to the listing page.
 
 <br />
 
@@ -1221,7 +1225,7 @@ import dataProvider from "@pankod/refine-simple-rest";
 import routerProvider from "@pankod/refine-react-router";
 
 // highlight-next-line
-import { PostList, PostShow, PostEdit, PostCreate } from "./pages";
+import { PostList, PostShow, PostEdit, PostCreate } from "./pages/posts";
 
 export const App: React.FC = () => {
     return (
@@ -1246,7 +1250,7 @@ export const App: React.FC = () => {
 
 <br />
 
-And that's it! Try it in your browser and see if you can create new posts from scratch.
+And that's it! Try it on browser and see if you can create new posts from scratch.
 
 We should notice some minor differences from the edit example:
 
@@ -1273,9 +1277,9 @@ We should notice some minor differences from the edit example:
 
 Deleting a record can be done in two ways.
 
-First way is adding a delete button on each row since _refine_ doesn't automatically add one, so we have to update our `<PostList>` component to add a `<DeleteButton>` for each record:
+First way is adding an delete button on each row since _refine_ doesn't automatically add one, so we have to update our `<PostList>` component to add a `<DeleteButton>` for each record:
 
-```tsx title="pages/posts/list.tsx"
+```tsx title="components/pages/posts.tsx"
 import {
     List,
     TextField,
@@ -1400,7 +1404,7 @@ import { Refine, Resource } from "@pankod/refine";
 import routerProvider from "@pankod/refine-react-router";
 import dataProvider from "@pankod/refine-simple-rest";
 
-import { PostList, PostShow, PostEdit, PostCreate } from "./pages";
+import { PostList, PostShow, PostEdit, PostCreate } from "./pages/posts";
 
 export const App: React.FC = () => {
     return (

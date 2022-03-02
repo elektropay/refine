@@ -1,13 +1,12 @@
+import { useShow, IResourceComponentsProps, useOne } from "@pankod/refine-core";
+
 import {
-    useShow,
     Show,
     Typography,
-    IResourceComponentsProps,
-    useOne,
     MarkdownField,
     Space,
     ImageField,
-} from "@pankod/refine";
+} from "@pankod/refine-antd";
 
 import { IPost, ICategory } from "interfaces";
 
@@ -20,7 +19,7 @@ export const PostsShow: React.FC<IResourceComponentsProps> = () => {
 
     const { data: categoryData, isLoading: categoryIsLoading } =
         useOne<ICategory>({
-            resource: "6180e6efb14df",
+            resource: "61c43adc284ac",
             id: record?.categoryId || "",
             queryOptions: {
                 enabled: !!record,
@@ -30,7 +29,7 @@ export const PostsShow: React.FC<IResourceComponentsProps> = () => {
     return (
         <Show isLoading={isLoading}>
             <Title level={5}>Id</Title>
-            <Text>{record?.$id}</Text>
+            <Text>{record?.id}</Text>
 
             <Title level={5}>Title</Title>
             <Text>{record?.title}</Text>

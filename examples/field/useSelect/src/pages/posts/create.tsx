@@ -1,13 +1,14 @@
 import React, { useState } from "react";
+import { IResourceComponentsProps } from "@pankod/refine-core";
+
 import {
     Create,
     Form,
     Input,
-    IResourceComponentsProps,
     Select,
     useForm,
     useSelect,
-} from "@pankod/refine";
+} from "@pankod/refine-antd";
 
 import ReactMarkdown from "react-markdown";
 import ReactMde from "react-mde";
@@ -25,6 +26,13 @@ export const PostCreate: React.FC<IResourceComponentsProps> = () => {
             {
                 field: "title",
                 order: "asc",
+            },
+        ],
+        onSearch: (value) => [
+            {
+                field: "title",
+                operator: "contains",
+                value,
             },
         ],
     });

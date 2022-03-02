@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM node:16-alpine
 
 WORKDIR /opt/app
 
@@ -10,8 +10,8 @@ RUN npm install
 
 COPY . /opt/app
 
-RUN npm run bootstrap
-RUN npm run build
+RUN npm run bootstrap -- --scope fine-foods-client
+RUN npm run build -- --scope fine-foods-client
 
 #Example client
 WORKDIR /opt/app/examples/fineFoods/client

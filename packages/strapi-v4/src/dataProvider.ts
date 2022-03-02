@@ -5,7 +5,8 @@ import {
     CrudFilters,
     CrudSorting,
     CrudOperators,
-} from "@pankod/refine";
+    BaseKey,
+} from "@pankod/refine-core";
 import { stringify, parse } from "qs";
 
 const axiosInstance = axios.create();
@@ -77,13 +78,42 @@ const generateFilter = (filters?: CrudFilters) => {
     return queryFilters;
 };
 
-const normalizeData = (data: any) => {
-    const _data = data.data.map((item: any) => ({
-        id: item.id,
-        ...item.attributes,
-    }));
+const normalizeData = (data: any): any => {
+    const isObject = (data: any) =>
+        Object.prototype.toString.call(data) === "[object Object]";
 
-    return _data;
+    const flatten = (data: any) => {
+        if (!data.attributes) return data;
+
+        return {
+            id: data.id,
+            ...data.attributes,
+        };
+    };
+
+    if (Array.isArray(data)) {
+        return data.map((item) => normalizeData(item));
+    }
+
+    if (isObject(data)) {
+        if (Array.isArray(data.data)) {
+            data = [...data.data];
+        } else if (isObject(data.data)) {
+            data = flatten({ ...data.data });
+        } else if (data.data === null) {
+            data = null;
+        } else {
+            data = flatten(data);
+        }
+
+        for (const key in data) {
+            data[key] = normalizeData(data[key]);
+        }
+
+        return data;
+    }
+
+    return data;
 };
 
 export const DataProvider = (
@@ -129,7 +159,7 @@ export const DataProvider = (
         const url = `${apiUrl}/${resource}`;
 
         const query = ids
-            .map((item: string) => `filters[id][$in]=${item}`)
+            .map((item: BaseKey) => `filters[id][$in]=${item}`)
             .join("&");
 
         const { data } = await httpClient.get(`${url}?${query}`);
@@ -142,8 +172,13 @@ export const DataProvider = (
     create: async ({ resource, variables }) => {
         const url = `${apiUrl}/${resource}`;
 
-        const { data } = await httpClient.post(url, { data: variables });
+        let dataVariables: any = { data: variables };
 
+        if (resource === "users") {
+            dataVariables = variables;
+        }
+
+        const { data } = await httpClient.post(url, dataVariables);
         return {
             data,
         };
@@ -152,8 +187,13 @@ export const DataProvider = (
     update: async ({ resource, id, variables }) => {
         const url = `${apiUrl}/${resource}/${id}`;
 
-        const { data } = await httpClient.put(url, { data: variables });
+        let dataVariables: any = { data: variables };
 
+        if (resource === "users") {
+            dataVariables = variables;
+        }
+
+        const { data } = await httpClient.put(url, dataVariables);
         return {
             data,
         };
@@ -162,10 +202,14 @@ export const DataProvider = (
     updateMany: async ({ resource, ids, variables }) => {
         const response = await Promise.all(
             ids.map(async (id) => {
-                const { data } = await httpClient.put(
-                    `${apiUrl}/${resource}/${id}`,
-                    { data: variables },
-                );
+                const url = `${apiUrl}/${resource}/${id}`;
+
+                let dataVariables: any = { data: variables };
+
+                if (resource === "users") {
+                    dataVariables = variables;
+                }
+                const { data } = await httpClient.put(url, dataVariables);
                 return data;
             }),
         );
@@ -207,10 +251,7 @@ export const DataProvider = (
         const { data } = await httpClient.get(url);
 
         return {
-            data: {
-                id: data.data.id,
-                ...data.data.attributes,
-            },
+            data: normalizeData(data),
         };
     },
 

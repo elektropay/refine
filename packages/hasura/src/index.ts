@@ -5,7 +5,7 @@ import {
     CrudFilters,
     CrudSorting,
     DataProvider,
-} from "@pankod/refine";
+} from "@pankod/refine-core";
 
 export type HasuraSortingType = Record<string, "asc" | "desc">;
 
@@ -45,21 +45,25 @@ export type HasuraFilterCondition =
     | "_nilike"
     | "_is_null";
 
-const hasuraFilters: Record<CrudOperators, HasuraFilterCondition> = {
-    eq: "_eq",
-    ne: "_neq",
-    lt: "_lt",
-    gt: "_gt",
-    lte: "_lte",
-    gte: "_gte",
-    in: "_in",
-    nin: "_nin",
-    contains: "_ilike",
-    ncontains: "_nilike",
-    containss: "_like",
-    ncontainss: "_nlike",
-    null: "_is_null",
-};
+const hasuraFilters: Record<CrudOperators, HasuraFilterCondition | undefined> =
+    {
+        eq: "_eq",
+        ne: "_neq",
+        lt: "_lt",
+        gt: "_gt",
+        lte: "_lte",
+        gte: "_gte",
+        in: "_in",
+        nin: "_nin",
+        contains: "_ilike",
+        ncontains: "_nilike",
+        containss: "_like",
+        ncontainss: "_nlike",
+        null: "_is_null",
+        between: undefined,
+        nbetween: undefined,
+        nnull: undefined,
+    };
 
 export const generateFilters: any = (filters?: CrudFilters) => {
     if (!filters) {
@@ -70,8 +74,13 @@ export const generateFilters: any = (filters?: CrudFilters) => {
 
     filters.forEach((filter) => {
         resultFilter[filter.field] = {};
-        resultFilter[filter.field][hasuraFilters[filter.operator]] =
-            filter.value;
+        const operator = hasuraFilters[filter.operator];
+
+        if (!operator) {
+            throw new Error(`Operator ${filter.operator} is not supported`);
+        }
+
+        resultFilter[filter.field][operator] = filter.value;
     });
 
     return resultFilter;
@@ -133,7 +142,7 @@ const dataProvider = (client: GraphQLClient): DataProvider => {
 
             const operation = metaData?.operation ?? resource;
 
-            const aggreateOperation = `${operation}_aggregate`;
+            const aggregateOperation = `${operation}_aggregate`;
 
             const hasuraSortingType = `[${operation}_order_by!]`;
             const hasuraFiltersType = `${operation}_bool_exp`;
@@ -151,7 +160,7 @@ const dataProvider = (client: GraphQLClient): DataProvider => {
                                 type: hasuraSortingType,
                             },
                         }),
-                        ...(hasuraSorting && {
+                        ...(hasuraFilters && {
                             where: {
                                 value: hasuraFilters,
                                 type: hasuraFiltersType,
@@ -160,8 +169,14 @@ const dataProvider = (client: GraphQLClient): DataProvider => {
                     },
                 },
                 {
-                    operation: aggreateOperation,
+                    operation: aggregateOperation,
                     fields: [{ aggregate: ["count"] }],
+                    variables: {
+                        where: {
+                            value: hasuraFilters,
+                            type: hasuraFiltersType,
+                        },
+                    },
                 },
             ]);
 
@@ -169,7 +184,7 @@ const dataProvider = (client: GraphQLClient): DataProvider => {
 
             return {
                 data: result[operation],
-                total: result[aggreateOperation].aggregate.count,
+                total: result[aggregateOperation].aggregate.count,
             };
         },
 

@@ -15,6 +15,10 @@ import permission from '@site/static/img/guides-and-concepts/data-provider/appwr
 ## Introduction
 **refine** and [Appwrite](https://appwrite.io/) work in harmony, offering you quick development options. You can use your data (API, Database) very simply by using **refine**'s Appwrite data provider.
 
+:::info
+[Appwrite](https://appwrite.io/) version >= 0.12 is required
+:::
+
 You can only focus on your UI as we can handle your data quickly and simply.
 
 :::caution
@@ -25,13 +29,16 @@ This guide has been prepared assuming you know the basics of **refine**. If you 
 ```bash
 npm install @pankod/refine-appwrite
 ```
+:::caution
+To make this example more visual, we used the [`@pankod/refine-antd`](https://github.com/pankod/refine/tree/master/packages/refine-antd) package. If you are using Refine headless, you need to provide the components, hooks or helpers imported from the [`@pankod/refine-antd`](https://github.com/pankod/refine/tree/master/packages/refine-antd) package.
+:::
 
 ## Usage
 It is very simple to use and consists of two steps. First, define your Appwrite project id and then give it to the dataprovider.
 
 ### Appwrite Client
 ```tsx title="appwriteClient.ts"
-import { Appwrite } from "appwrite";
+import { Appwrite } from "@pankod/refine-appwrite";
 
 const APPWRITE_URL = "http://localhost/v1";
 //highlight-start
@@ -47,7 +54,7 @@ export appwriteClient;
 
 ### Authprovider
 ```tsx title="authProvider.ts"
-import { AuthProvider } from "@pankod/refine";
+import { AuthProvider } from "@pankod/refine-core";
 
 import appwriteClient from "./appwriteClient";
 
@@ -82,7 +89,8 @@ export const authProvider: AuthProvider = {
 ```
 
 ```tsx title="App.tsx"
-import { Refine, AuthProvider } from "@pankod/refine";
+import { Refine, AuthProvider } from "@pankod/refine-core";
+import { Layout, ReadyPage, notificationProvider, ErrorComponent } from "@pankod/refine-antd";
 //highlight-start
 import { dataProvider } from "@pankod/refine-appwrite";
 //highlight-end
@@ -101,6 +109,10 @@ const App: React.FC = () => {
             authProvider={authProvider}
         //highlight-end    
             routerProvider={routerProvider}
+            Layout={Layout}
+            ReadyPage={ReadyPage}
+            notificationProvider={notificationProvider}
+            catchAll={<ErrorComponent />}
         />
     );
 };
@@ -184,6 +196,8 @@ We indicate that the read and write permission is open to everyone by giving the
 
 ```tsx title="pages/login.tsx"
 import React from "react";
+
+import { useLogin } from "@pankod/refine-core";
 import {
     Row,
     Col,
@@ -194,10 +208,9 @@ import {
     Input,
     Button,
     Checkbox,
-} from "@pankod/refine";
-import "./styles.css";
+} from "@pankod/refine-antd";
 
-import { useLogin } from "@pankod/refine";
+import "./styles.css";
 
 const { Text, Title } = Typography;
 
@@ -336,6 +349,10 @@ const App: React.FC = () => {
             dataProvider={dataProvider(appwriteClient)}
             authProvider={authProvider}
             routerProvider={routerProvider}
+            Layout={Layout}
+            ReadyPage={ReadyPage}
+            notificationProvider={notificationProvider}
+            catchAll={<ErrorComponent />}
             LoginPage={Login}
             resources={[
                 {
@@ -365,18 +382,17 @@ Now that we've created our collections, we can create and list documents. Let's 
 <p>
 
 ```tsx
+import { useMany, IResourceComponentsProps } from "@pankod/refine-core";
 import {
     List,
     Table,
     TextField,
     useTable,
-    IResourceComponentsProps,
     Space,
     EditButton,
     ShowButton,
-    useMany,
     getDefaultSortOrder,
-} from "@pankod/refine";
+} from "@pankod/refine-antd";
 
 import { IPost, ICategory } from "interfaces";
 
@@ -384,7 +400,7 @@ export const PostsList: React.FC<IResourceComponentsProps> = () => {
     const { tableProps, sorter } = useTable<IPost>({
         initialSorter: [
             {
-                field: "$id",
+                field: "id",
                 order: "asc",
             },
         ],
@@ -402,9 +418,9 @@ export const PostsList: React.FC<IResourceComponentsProps> = () => {
 
     return (
         <List>
-            <Table {...tableProps} rowKey="$id">
+            <Table {...tableProps} rowKey="id">
                 <Table.Column
-                    dataIndex="$id"
+                    dataIndex="id"
                     title="ID"
                     sorter
                     defaultSortOrder={getDefaultSortOrder("id", sorter)}
@@ -421,9 +437,8 @@ export const PostsList: React.FC<IResourceComponentsProps> = () => {
                         return (
                             <TextField
                                 value={
-                                    data?.data.find(
-                                        (item) => item.$id === value,
-                                    )?.title
+                                    data?.data.find((item) => item.id === value)
+                                        ?.title
                                 }
                             />
                         );
@@ -437,12 +452,12 @@ export const PostsList: React.FC<IResourceComponentsProps> = () => {
                             <EditButton
                                 hideText
                                 size="small"
-                                recordItemId={record.$id}
+                                recordItemId={record.id}
                             />
                             <ShowButton
                                 hideText
                                 size="small"
-                                recordItemId={record.$id}
+                                recordItemId={record.id}
                             />
                         </Space>
                     )}
@@ -475,17 +490,18 @@ We can now create posts and set categories from our **refine** UI.
 
 ```tsx
 import { useState } from "react";
+
+import { IResourceComponentsProps } from "@pankod/refine-core";
 import {
     Create,
     Form,
     Input,
-    IResourceComponentsProps,
     Select,
     Upload,
     useForm,
     useSelect,
     RcFile,
-} from "@pankod/refine";
+} from "@pankod/refine-antd";
 
 import ReactMarkdown from "react-markdown";
 import ReactMde from "react-mde";
@@ -501,7 +517,7 @@ export const PostsCreate: React.FC<IResourceComponentsProps> = () => {
     const { selectProps: categorySelectProps } = useSelect<ICategory>({
         resource: "61bc4afa9ee2c",
         optionLabel: "title",
-        optionValue: "$id",
+        optionValue: "id",
     });
 
     const [selectedTab, setSelectedTab] =
@@ -634,17 +650,18 @@ You can edit the posts and categories we have created update your data.
 
 ```tsx
 import React, { useState } from "react";
+
+import { IResourceComponentsProps } from "@pankod/refine-core";
 import {
     Edit,
     Form,
     Input,
-    IResourceComponentsProps,
     RcFile,
     Select,
     Upload,
     useForm,
     useSelect,
-} from "@pankod/refine";
+} from "@pankod/refine-antd";
 
 import ReactMarkdown from "react-markdown";
 import ReactMde from "react-mde";
@@ -662,7 +679,7 @@ export const PostsEdit: React.FC<IResourceComponentsProps> = () => {
         resource: "61bc4afa9ee2c",
         defaultValue: postData?.categoryId,
         optionLabel: "title",
-        optionValue: "$id",
+        optionValue: "id",
     });
 
     const [selectedTab, setSelectedTab] =
@@ -767,3 +784,17 @@ export const PostsEdit: React.FC<IResourceComponentsProps> = () => {
     </div>
     <img src={edit} alt="edit" />
 </div>
+
+## Live Codesandbox Example
+
+Username: `demo@refine.dev`
+
+Password: `demodemo`
+
+<iframe
+    src="https://codesandbox.io/embed/refine-appwrite-example-rn50m?autoresize=1&fontsize=14&hidenavigation=1&module=%2Fsrc%2FApp.tsx&theme=dark&view=preview"
+    style={{width: "100%", height:"80vh", border: "0px", borderRadius: "8px", overflow:"hidden"}}
+    title="refine-appwrite-example"
+    allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+    sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+></iframe>

@@ -1,9 +1,13 @@
-import { useState } from "react";
-import { Refine } from "@pankod/refine";
+import { Refine } from "@pankod/refine-core";
+import {
+    notificationProvider,
+    Layout,
+    ErrorComponent,
+} from "@pankod/refine-antd";
 import dataProvider from "@pankod/refine-simple-rest";
 import routerProvider from "@pankod/refine-react-router";
 import { newEnforcer } from "casbin.js";
-import "@pankod/refine/dist/styles.min.css";
+import "@pankod/refine-antd/dist/styles.min.css";
 
 import { model, adapter } from "accessControl";
 import { Header } from "components/header";
@@ -19,7 +23,8 @@ import {
 const API_URL = "https://api.fake-rest.refine.dev";
 
 const App: React.FC = () => {
-    const [role, setRole] = useState("admin");
+    const role = localStorage.getItem("role") ?? "admin";
+
     return (
         <Refine
             routerProvider={routerProvider}
@@ -78,7 +83,10 @@ const App: React.FC = () => {
                     show: CategoryShow,
                 },
             ]}
-            Header={() => <Header role={role} setRole={setRole} />}
+            Header={() => <Header role={role} />}
+            notificationProvider={notificationProvider}
+            Layout={Layout}
+            catchAll={<ErrorComponent />}
         />
     );
 };

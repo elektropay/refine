@@ -1,17 +1,17 @@
 import React, { useState } from "react";
+import { HttpError, IResourceComponentsProps } from "@pankod/refine-core";
+
 import {
     Edit,
     Form,
-    HttpError,
     Input,
-    IResourceComponentsProps,
     ListButton,
     RefreshButton,
     Select,
     Space,
     useForm,
     useSelect,
-} from "@pankod/refine";
+} from "@pankod/refine-antd";
 
 import ReactMarkdown from "react-markdown";
 import ReactMde from "react-mde";
@@ -27,7 +27,6 @@ export const PostEdit: React.FC<IResourceComponentsProps> = () => {
         IPost
     >({
         metaData: {
-            operation: "post",
             fields: [
                 "id",
                 "title",

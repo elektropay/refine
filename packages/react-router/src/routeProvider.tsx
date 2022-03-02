@@ -12,7 +12,7 @@ import {
     useRefineContext,
     useRouterContext,
     CanAccess,
-} from "@pankod/refine";
+} from "@pankod/refine-core";
 
 type IRoutesProps = RouteProps & { routes?: RouteProps[] };
 
@@ -38,7 +38,8 @@ const RouteProviderBase: React.FC = () => {
 
     const routes: IRoutesProps[] = [];
     const RouteHandler = (val: IResourceItem): void => {
-        const { list, create, edit, show, canDelete, route, name } = val;
+        const { list, create, edit, show, canDelete, route, name, options } =
+            val;
 
         const ListComponent = list;
         const CreateComponent = create;
@@ -65,6 +66,7 @@ const RouteProviderBase: React.FC = () => {
                             canDelete={canDelete}
                             canShow={canShow}
                             name={name}
+                            options={options}
                         />
                     </CanAccess>
                 ),
@@ -77,7 +79,9 @@ const RouteProviderBase: React.FC = () => {
                     <CanAccess
                         resource={name}
                         action="create"
-                        params={{ id: props.match.params.id }}
+                        params={{
+                            id: decodeURIComponent(props.match.params.id),
+                        }}
                         fallback={catchAll ?? <ErrorComponent />}
                     >
                         <CreateComponent
@@ -86,6 +90,7 @@ const RouteProviderBase: React.FC = () => {
                             canDelete={canDelete}
                             canShow={canShow}
                             name={name}
+                            options={options}
                         />
                     </CanAccess>
                 ),
@@ -100,7 +105,9 @@ const RouteProviderBase: React.FC = () => {
                     <CanAccess
                         resource={name}
                         action="edit"
-                        params={{ id: props.match.params.id }}
+                        params={{
+                            id: decodeURIComponent(props.match.params.id),
+                        }}
                         fallback={catchAll ?? <ErrorComponent />}
                     >
                         <EditComponent
@@ -109,6 +116,7 @@ const RouteProviderBase: React.FC = () => {
                             canDelete={canDelete}
                             canShow={canShow}
                             name={name}
+                            options={options}
                         />
                     </CanAccess>
                 ),
@@ -123,7 +131,9 @@ const RouteProviderBase: React.FC = () => {
                     <CanAccess
                         resource={name}
                         action="show"
-                        params={{ id: props.match.params.id }}
+                        params={{
+                            id: decodeURIComponent(props.match.params.id),
+                        }}
                         fallback={catchAll ?? <ErrorComponent />}
                     >
                         <ShowComponent
@@ -132,6 +142,7 @@ const RouteProviderBase: React.FC = () => {
                             canDelete={canDelete}
                             canShow={canShow}
                             name={name}
+                            options={options}
                         />
                     </CanAccess>
                 ),
@@ -154,6 +165,7 @@ const RouteProviderBase: React.FC = () => {
                             canDelete={canDelete}
                             canShow={canShow}
                             name={name}
+                            options={options}
                         />
                     </CanAccess>
                 ),
@@ -167,11 +179,7 @@ const RouteProviderBase: React.FC = () => {
         RouteHandler(item);
     });
 
-    const RouteWithSubRoutes = (route: any) => (
-        <LayoutWrapper>
-            <Route {...route} />
-        </LayoutWrapper>
-    );
+    const RouteWithSubRoutes = (route: any) => <Route {...route} />;
 
     const renderAuthorized = () => (
         <Switch>
@@ -179,13 +187,13 @@ const RouteProviderBase: React.FC = () => {
                 <Route key={`custom-route-${i}`} {...route} />
             ))}
             <Route>
-                <Switch>
-                    <Route
-                        path="/"
-                        exact
-                        component={() =>
-                            DashboardPage ? (
-                                <LayoutWrapper>
+                <LayoutWrapper>
+                    <Switch>
+                        <Route
+                            path="/"
+                            exact
+                            component={() =>
+                                DashboardPage ? (
                                     <CanAccess
                                         resource="dashboard"
                                         action="list"
@@ -195,36 +203,29 @@ const RouteProviderBase: React.FC = () => {
                                     >
                                         <DashboardPage />
                                     </CanAccess>
-                                </LayoutWrapper>
-                            ) : (
-                                <Redirect to={`/${resources[0].route}`} />
-                            )
-                        }
-                    />
-                    {[...routes].map((route, i) => (
-                        <RouteWithSubRoutes key={i} {...route} />
-                    ))}
-                    <Route path="/:resource?/:action?">
-                        {catchAll ?? (
-                            <LayoutWrapper>
-                                <ErrorComponent />
-                            </LayoutWrapper>
-                        )}
-                    </Route>
-                    <Route>
-                        {catchAll ?? (
-                            <LayoutWrapper>
-                                <ErrorComponent />
-                            </LayoutWrapper>
-                        )}
-                    </Route>
-                </Switch>
+                                ) : (
+                                    <Redirect to={`/${resources[0].route}`} />
+                                )
+                            }
+                        />
+                        {[...routes].map((route, i) => (
+                            <RouteWithSubRoutes key={i} {...route} />
+                        ))}
+                        <Route path="/:resource?/:action?">
+                            {catchAll ?? <ErrorComponent />}
+                        </Route>
+                        <Route>{catchAll ?? <ErrorComponent />}</Route>
+                    </Switch>
+                </LayoutWrapper>
             </Route>
         </Switch>
     );
 
     const renderUnauthorized = () => (
         <Switch>
+            {[...(customRoutes || [])].map((route, i) => (
+                <Route key={`custom-route-${i}`} {...route} />
+            ))}
             <Route
                 exact
                 path={["/", "/login"]}
@@ -232,10 +233,6 @@ const RouteProviderBase: React.FC = () => {
                     LoginPage ? <LoginPage /> : <DefaultLoginPage />
                 }
             />
-            {[...(customRoutes || [])].map((route, i) => (
-                <Route key={`custom-route-${i}`} {...route} />
-            ))}
-
             <Route
                 render={({ location }: { location: any }) => {
                     if (isLoading) {

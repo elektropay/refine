@@ -1,4 +1,5 @@
 import { useResourceWithRoute, useRouterContext } from "@hooks";
+import { BaseKey } from "../../interfaces";
 
 export type HistoryType = "push" | "replace";
 
@@ -7,7 +8,7 @@ export type HistoryType = "push" | "replace";
  * It allows you to manage your routing operations in refine.
  * Using this hook, you can manage all the routing operations of your application very easily.
  *
- * @see {@link https://refine.dev/docs/api-references/hooks/navigation/useNavigation} for more details.
+ * @see {@link https://refine.dev/docs/core/hooks/navigation/useNavigation} for more details.
  */
 export const useNavigation = () => {
     const { useHistory } = useRouterContext();
@@ -22,32 +23,46 @@ export const useNavigation = () => {
             : history.replace(`/${resourceName.route}/create`);
     };
 
-    const edit = (resource: string, id: string, type: HistoryType = "push") => {
-        const resourceName = resourceWithRoute(resource);
-
-        type === "push"
-            ? history.push(`/${resourceName.route}/edit/${id}`)
-            : history.replace(`/${resourceName.route}/edit/${id}`);
-    };
-
-    const clone = (
+    const edit = (
         resource: string,
-        id: string,
+        id: BaseKey,
         type: HistoryType = "push",
     ) => {
         const resourceName = resourceWithRoute(resource);
 
+        const encodedId = encodeURIComponent(id);
+
         type === "push"
-            ? history.push(`/${resourceName.route}/clone/${id}`)
-            : history.replace(`/${resourceName.route}/clone/${id}`);
+            ? history.push(`/${resourceName.route}/edit/${encodedId}`)
+            : history.replace(`/${resourceName.route}/edit/${encodedId}`);
     };
 
-    const show = (resource: string, id: string, type: HistoryType = "push") => {
+    const clone = (
+        resource: string,
+        id: BaseKey,
+        type: HistoryType = "push",
+    ) => {
         const resourceName = resourceWithRoute(resource);
 
+        const encodedId = encodeURIComponent(id);
+
         type === "push"
-            ? history.push(`/${resourceName.route}/show/${id}`)
-            : history.replace(`/${resourceName.route}/show/${id}`);
+            ? history.push(`/${resourceName.route}/clone/${encodedId}`)
+            : history.replace(`/${resourceName.route}/clone/${encodedId}`);
+    };
+
+    const show = (
+        resource: string,
+        id: BaseKey,
+        type: HistoryType = "push",
+    ) => {
+        const resourceName = resourceWithRoute(resource);
+
+        const encodedId = encodeURIComponent(id);
+
+        type === "push"
+            ? history.push(`/${resourceName.route}/show/${encodedId}`)
+            : history.replace(`/${resourceName.route}/show/${encodedId}`);
     };
 
     const list = (resource: string, type: HistoryType = "push") => {

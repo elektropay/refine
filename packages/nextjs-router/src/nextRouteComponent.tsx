@@ -6,8 +6,8 @@ import {
     useResource,
     LoginPage as DefaultLoginPage,
     CanAccess,
-} from "@pankod/refine";
-import type { ResourceRouterParams } from "@pankod/refine";
+} from "@pankod/refine-core";
+import type { ResourceRouterParams } from "@pankod/refine-core";
 
 import { RouterProvider } from "./routerProvider";
 
@@ -33,7 +33,10 @@ export const NextRouteComponent: React.FC<NextRouteComponentProps> = ({
     const { pathname } = useLocation();
     const { DashboardPage, catchAll, LoginPage } = useRefineContext();
 
-    const resource = resources.find((res) => res.route === routeResourceName);
+    const resource = resources.find(
+        (res) =>
+            res.name === routeResourceName || res.route === routeResourceName,
+    );
 
     const isServer = typeof window !== "undefined";
 
@@ -71,6 +74,7 @@ export const NextRouteComponent: React.FC<NextRouteComponentProps> = ({
             canEdit,
             canShow,
             canDelete,
+            options,
         } = resource;
 
         const List = list ?? (() => null);
@@ -94,6 +98,7 @@ export const NextRouteComponent: React.FC<NextRouteComponentProps> = ({
                                 canDelete={canDelete}
                                 canShow={canShow}
                                 initialData={initialData}
+                                options={options}
                                 {...rest}
                             />
                         </CanAccess>
@@ -115,6 +120,7 @@ export const NextRouteComponent: React.FC<NextRouteComponentProps> = ({
                                 canDelete={canDelete}
                                 canShow={canShow}
                                 initialData={initialData}
+                                options={options}
                                 {...rest}
                             />
                         </CanAccess>
@@ -136,6 +142,7 @@ export const NextRouteComponent: React.FC<NextRouteComponentProps> = ({
                                 canDelete={canDelete}
                                 canShow={canShow}
                                 initialData={initialData}
+                                options={options}
                                 {...rest}
                             />
                         </CanAccess>
@@ -157,6 +164,7 @@ export const NextRouteComponent: React.FC<NextRouteComponentProps> = ({
                                 canDelete={canDelete}
                                 canShow={canShow}
                                 initialData={initialData}
+                                options={options}
                                 {...rest}
                             />
                         </CanAccess>

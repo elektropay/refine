@@ -4,6 +4,7 @@ title: CSV Import
 ---
 
 import importButton from '@site/static/img/guides-and-concepts/csv-import/import-button.png';
+import importing from '@site/static/img/guides-and-concepts/csv-import/importing.gif';
 
 You can easily import CSV files for any resource by using **refine**'s customizable `useImport` hook, optionally with `<ImportButton>` component. `useImport` hook returns the necessary props for `<ImportButton>` component. **refine** uses [Papa Parse][Papa Parse] parser under the hood to parse CSV files.
 
@@ -14,15 +15,15 @@ You can call the `useImport` hook and add an `<ImportButton>` with properties re
 Let's look at an example of adding a custom import button:
 
 ```tsx  title="pages/posts/list.tsx"
+import { useMany } from "@pankod/refine-core";
 import {
     List,
     useTable,
-    useMany,
 // highlight-start
     useImport,
     ImportButton,
 // highlight-end
-} from "@pankod/refine";
+} from "@pankod/refine-antd";
 
 export const PostList: React.FC = () => {
     const { tableProps } = useTable<IPost>();
@@ -151,11 +152,21 @@ And it's done. When you click on the button and provide a CSV file of the header
 }
 ```
 
+<div class="img-container">
+    <div class="window">
+        <div class="control red"></div>
+        <div class="control orange"></div>
+        <div class="control green"></div>
+    </div>
+    <img src={importing} alt="Importing CSV" />
+</div>
+<br />
+
 Depending on the [`batchSize`][batchSize] option, posts can get sent one by one or as batches. By default, all records are sent in one [`createMany`][createMany] call.
 
 ## Live Codesandbox Example
 
-<iframe src="https://codesandbox.io/embed/refine-import-export-example-4nneu?autoresize=1&fontsize=14&theme=dark&view=preview"
+<iframe src="https://codesandbox.io/embed/refine-import-export-example-2ftcf?autoresize=1&fontsize=14&theme=dark&view=preview"
      style={{width: "100%", height:"80vh", border: "0px", borderRadius: "8px", overflow:"hidden"}}
      title="refine-import-export-example"
      allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
@@ -164,7 +175,7 @@ Depending on the [`batchSize`][batchSize] option, posts can get sent one by one 
 
 
 [Papa Parse]: https://www.papaparse.com/
-[batchSize]: /api-references/hooks/import-export/useImport.md#api-reference
-[dataProvider]: /api-references/providers/data-provider.md
-[create]: /api-references/providers/data-provider.md#create
-[createMany]: /api-references/providers/data-provider.md#createmany
+[batchSize]: /core/hooks/import-export/useImport.md#api-reference
+[dataProvider]: /core/providers/data-provider.md
+[create]: /core/providers/data-provider.md#create
+[createMany]: /core/providers/data-provider.md#createmany

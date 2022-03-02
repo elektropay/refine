@@ -1,9 +1,8 @@
-import { CrudFilters, CrudSorting, DataProvider } from "@pankod/refine";
+import { CrudFilters, CrudSorting, DataProvider } from "@pankod/refine-core";
 import { GraphQLClient } from "graphql-request";
 import * as gql from "gql-query-builder";
 import pluralize from "pluralize";
 import camelCase from "camelcase";
-import { stringify } from "query-string";
 
 const genereteSort = (sort?: CrudSorting) => {
     if (sort && sort.length > 0) {
@@ -178,10 +177,10 @@ const dataProvider = (client: GraphQLClient): DataProvider => {
                         type: `${camelUpdateName}Input`,
                     },
                 },
-                fields: metaData?.fields ?? [
+                fields: [
                     {
                         operation: singularResource,
-                        fields: ["id"],
+                        fields: metaData?.fields ?? ["id"],
                         variables: {},
                     },
                 ],
@@ -209,10 +208,10 @@ const dataProvider = (client: GraphQLClient): DataProvider => {
                                 type: `${camelUpdateName}Input`,
                             },
                         },
-                        fields: metaData?.fields ?? [
+                        fields: [
                             {
                                 operation: singularResource,
-                                fields: ["id"],
+                                fields: metaData?.fields ?? ["id"],
                                 variables: {},
                             },
                         ],

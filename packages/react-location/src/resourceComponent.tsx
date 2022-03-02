@@ -8,7 +8,7 @@ import {
     useRouterContext,
     ResourceRouterParams,
     CanAccess,
-} from "@pankod/refine";
+} from "@pankod/refine-core";
 
 export const ResourceComponentWrapper: React.FC = () => {
     const { catchAll } = useRefineContext();
@@ -34,6 +34,7 @@ export const ResourceComponentWrapper: React.FC = () => {
             canEdit,
             canShow,
             canDelete,
+            options,
         } = resource;
 
         const List = list ?? (() => null);
@@ -56,6 +57,7 @@ export const ResourceComponentWrapper: React.FC = () => {
                                 canEdit={canEdit}
                                 canDelete={canDelete}
                                 canShow={canShow}
+                                options={options}
                             />
                         </CanAccess>
                     );
@@ -74,6 +76,7 @@ export const ResourceComponentWrapper: React.FC = () => {
                                 canEdit={canEdit}
                                 canDelete={canDelete}
                                 canShow={canShow}
+                                options={options}
                             />
                         </CanAccess>
                     );
@@ -92,6 +95,7 @@ export const ResourceComponentWrapper: React.FC = () => {
                                 canEdit={canEdit}
                                 canDelete={canDelete}
                                 canShow={canShow}
+                                options={options}
                             />
                         </CanAccess>
                     );
@@ -110,13 +114,14 @@ export const ResourceComponentWrapper: React.FC = () => {
                                 canEdit={canEdit}
                                 canDelete={canDelete}
                                 canShow={canShow}
+                                options={options}
                             />
                         </CanAccess>
                     );
             }
         };
 
-        return <LayoutWrapper>{renderCrud()}</LayoutWrapper>;
+        return renderCrud();
     }
 
     return catchAll ? (
