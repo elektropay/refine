@@ -53,7 +53,8 @@ title: Interface References
 | `"ncontainss"` | Doesn't contain, case sensitive |
 | `"between"`    | Between                         |
 | `"nbetween"`   | Doesn't between                 |
-| `"null"`       | Is null or not null             |
+| `"null"`       | Is null                         |
+| `"nnull"`      | Is not null                     |
 
 ## CrudSorting
 
@@ -87,10 +88,10 @@ title: Interface References
 
 ## BaseRecord
 
-| Key             | Type                 |
-| --------------- | -------------------- |
+| Key             | Type                  |
+| --------------- | --------------------- |
 | id?             | [`BaseKey`](#basekey) |
-| `[key: string]` | `any`                |
+| `[key: string]` | `any`                 |
 
 ## HttpError
 
@@ -106,7 +107,7 @@ ButtonProps
 | Key           | Type                                                     |
 | ------------- | -------------------------------------------------------- |
 | resourceName? | `string`                                                 |
-| recordItemId? | [`BaseKey`](#basekey)                                     |
+| recordItemId? | [`BaseKey`](#basekey)                                    |
 | onSuccess?    | `<TData = BaseRecord>(value: { data: TData; }) => void;` |
 | mutationMode? | [`MutationMode`](#mutationmode)                          |
 | hideText?     | `boolean`                                                |
@@ -201,13 +202,37 @@ ButtonProps
 | ------- | --------------------------------------------------------------------- |
 | channel | `string`                                                              |
 | types   | `Array<"deleted"` \| `"updated"` \| `"created"` \| "`*`" \| `string`> |
-| payload | `{ids?: BaseKey[]; [x: string]: any; }`                                |
+| payload | `{ids?: BaseKey[]; [x: string]: any; }`                               |
 | date    | `Date`                                                                |
 
 ## LiveModeProps
 
-| Key          | Type                                   |
-| ------------ | -------------------------------------- |
-| liveMode?    | `"auto"` \| `"manual"` \| `"off"`      |
+| Key          | Type                                    |
+| ------------ | --------------------------------------- |
+| liveMode?    | `"auto"` \| `"manual"` \| `"off"`       |
 | liveParams?  | `{ids?: BaseKey[]; [x: string]: any; }` |
-| onLiveEvent? | `(event: LiveEvent) => void`           |
+| onLiveEvent? | `(event: LiveEvent) => void`            |
+## OptionsProps
+
+| Key           | Type     |
+| ------------- | -------- |
+| label?        | `string` |
+| route?        | `string` |
+| [key: string] | `any`    |
+
+## ResourceItemProps
+
+| Key         | Type        |
+| ----------- | ----------- |
+| name        | `string`    |
+| label ?     | `string`    |
+| route?      | `string`    |
+| icon?       | `ReactNode` |
+| canCreate?  | `boolean`   |
+| canEdit?    | `boolean`   |
+| canShow?    | `boolean`   |
+| canDelete?  | `boolean`   |
+| options?    | `string`    |
+| parentName? | `string`    |
+
+

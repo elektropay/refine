@@ -15,6 +15,7 @@ import {
     HttpError,
     MetaDataQuery,
     LiveModeProps,
+    BaseKey,
 } from "../../interfaces";
 
 export type UseSelectProps<TData, TError> = {
@@ -23,7 +24,7 @@ export type UseSelectProps<TData, TError> = {
     optionValue?: string;
     sort?: CrudSorting;
     filters?: CrudFilters;
-    defaultValue?: string | string[] | number | number[];
+    defaultValue?: BaseKey | BaseKey[];
     debounce?: number;
     queryOptions?: UseQueryOptions<GetListResponse<TData>, TError>;
     fetchSize?: number;
@@ -60,7 +61,7 @@ export const useSelect = <
         debounce: debounceValue = 300,
         successNotification,
         errorNotification,
-        defaultValueQueryOptions,
+        defaultValueQueryOptions: defaultValueQueryOptionsFromProps,
         queryOptions,
         fetchSize,
         liveMode,
@@ -84,6 +85,9 @@ export const useSelect = <
             })),
         );
     };
+
+    const defaultValueQueryOptions =
+        defaultValueQueryOptionsFromProps ?? (queryOptions as any);
 
     const defaultValueQueryResult = useMany<TData, TError>({
         resource,

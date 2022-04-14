@@ -20,7 +20,6 @@ export type UseFormProps<
 > = UseFormPropsCore<TData, TError, TVariables> & {
     submitOnEnter?: boolean;
     warnWhenUnsavedChanges?: boolean;
-    dataProviderName?: string;
 };
 
 export type UseFormReturnType<
@@ -33,6 +32,7 @@ export type UseFormReturnType<
     saveButtonProps: ButtonProps & {
         onClick: () => void;
     };
+    onFinish: (values?: TVariables) => Promise<void>;
 };
 
 /**
@@ -71,14 +71,6 @@ export const useForm = <
     TError,
     TVariables
 > => {
-    const onMutationSuccess: typeof onMutationSuccessProp = (
-        data,
-        values,
-        context,
-    ) => {
-        onMutationSuccessProp?.(data, values, context);
-    };
-
     const [formAnt] = Form.useForm();
     const formSF = useFormSF<TData, TVariables>({
         form: formAnt,
@@ -86,7 +78,9 @@ export const useForm = <
     const { form } = formSF;
 
     const useFormCoreResult = useFormCore<TData, TError, TVariables>({
-        onMutationSuccess,
+        onMutationSuccess: onMutationSuccessProp
+            ? onMutationSuccessProp
+            : undefined,
         onMutationError,
         redirect,
         action,
@@ -110,16 +104,14 @@ export const useForm = <
     const warnWhenUnsavedChanges =
         warnWhenUnsavedChangesProp ?? warnWhenUnsavedChangesRefine;
 
-    const { data, isFetching } = queryResult;
-
     React.useEffect(() => {
         form.setFieldsValue({
-            ...(data?.data as any), // Fix Me
+            ...(queryResult?.data?.data as any), // Fix Me
         });
         return () => {
             form.resetFields();
         };
-    }, [data, id, isFetching]);
+    }, [queryResult?.data?.data, id, queryResult?.isFetching]);
 
     const onKeyUp = (event: React.KeyboardEvent<HTMLFormElement>) => {
         if (submitOnEnter && event.key === "Enter") {
@@ -151,5 +143,8 @@ export const useForm = <
         },
         saveButtonProps,
         ...useFormCoreResult,
+        onFinish: async (values?: TVariables) => {
+            return await onFinish?.(values ?? formSF.form.getFieldsValue(true));
+        },
     };
 };
