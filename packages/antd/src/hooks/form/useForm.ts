@@ -66,6 +66,10 @@ export const useForm = <
     mutationMode,
     dataProviderName,
     onLiveEvent,
+    invalidates,
+    undoableTimeout,
+    queryOptions,
+    id: idFromProps,
 }: UseFormProps<TData, TError, TVariables> = {}): UseFormReturnType<
     TData,
     TError,
@@ -93,6 +97,10 @@ export const useForm = <
         mutationMode,
         dataProviderName,
         onLiveEvent,
+        invalidates,
+        undoableTimeout,
+        queryOptions,
+        id: idFromProps,
     });
 
     const { formLoading, onFinish, queryResult, id } = useFormCoreResult;
@@ -105,13 +113,8 @@ export const useForm = <
         warnWhenUnsavedChangesProp ?? warnWhenUnsavedChangesRefine;
 
     React.useEffect(() => {
-        form.setFieldsValue({
-            ...(queryResult?.data?.data as any), // Fix Me
-        });
-        return () => {
-            form.resetFields();
-        };
-    }, [queryResult?.data?.data, id, queryResult?.isFetching]);
+        form.resetFields();
+    }, [queryResult?.data?.data, id]);
 
     const onKeyUp = (event: React.KeyboardEvent<HTMLFormElement>) => {
         if (submitOnEnter && event.key === "Enter") {
@@ -140,6 +143,7 @@ export const useForm = <
             onFinish,
             onKeyUp,
             onValuesChange,
+            initialValues: queryResult?.data?.data,
         },
         saveButtonProps,
         ...useFormCoreResult,

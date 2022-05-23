@@ -6,10 +6,61 @@ import {
     compareFilters,
     compareSorters,
     unionSorters,
+    getDefaultSortOrder,
+    getDefaultFilter,
 } from "./";
 import { CrudSorting, CrudFilters } from "../../interfaces";
 
 describe("definitions/table", () => {
+    it("getDefaultSortOrder", () => {
+        const sorter: CrudSorting = [
+            {
+                field: "title",
+                order: "asc",
+            },
+            {
+                field: "view",
+                order: "desc",
+            },
+        ];
+
+        expect(getDefaultSortOrder("title", sorter)).toEqual("asc");
+        expect(getDefaultSortOrder("view", sorter)).toEqual("desc");
+    });
+
+    it("getDefaultFilter", () => {
+        const filters: CrudFilters = [
+            {
+                field: "title",
+                operator: "contains",
+                value: "test",
+            },
+        ];
+        expect(getDefaultFilter("title", filters, "contains")).toEqual("test");
+    });
+
+    it("getDefaultFilter empty array", () => {
+        const filters: CrudFilters = [
+            {
+                field: "title",
+                operator: "contains",
+                value: undefined,
+            },
+        ];
+        expect(getDefaultFilter("title", filters, "contains")).toEqual([]);
+    });
+
+    it("getDefaultFilter default operator", () => {
+        const filters: CrudFilters = [
+            {
+                field: "title",
+                operator: "eq",
+                value: "test",
+            },
+        ];
+        expect(getDefaultFilter("title", filters)).toEqual("test");
+    });
+
     it("stringify table params correctly", async () => {
         const pagination = {
             current: 1,
@@ -147,9 +198,21 @@ describe("definitions/table", () => {
                         value: "crud",
                     },
                 ],
+                [
+                    {
+                        field: "baz",
+                        operator: "in",
+                        value: "prev",
+                    },
+                ],
             ),
         ).toMatchInlineSnapshot(`
             Array [
+              Object {
+                "field": "baz",
+                "operator": "in",
+                "value": "prev",
+              },
               Object {
                 "field": "bar",
                 "operator": "in",
@@ -186,9 +249,26 @@ describe("definitions/table", () => {
                         value: "crud",
                     },
                 ],
+                [
+                    {
+                        field: "bar",
+                        operator: "in",
+                        value: "prev",
+                    },
+                    {
+                        field: "baz",
+                        operator: "in",
+                        value: "prev",
+                    },
+                ],
             ),
         ).toMatchInlineSnapshot(`
             Array [
+              Object {
+                "field": "baz",
+                "operator": "in",
+                "value": "prev",
+              },
               Object {
                 "field": "bar",
                 "operator": "in",
@@ -217,6 +297,13 @@ describe("definitions/table", () => {
                         field: "bar",
                         operator: "in",
                         value: undefined,
+                    },
+                ],
+                [
+                    {
+                        field: "bar",
+                        operator: "in",
+                        value: "prev",
                     },
                     {
                         field: "baz",

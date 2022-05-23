@@ -47,6 +47,12 @@ export type useTableProps<TData, TError> = {
 
 type ReactSetState<T> = React.Dispatch<React.SetStateAction<T>>;
 
+type SyncWithLocationParams = {
+    pagination: { current?: number; pageSize?: number };
+    sorter: CrudSorting;
+    filters: CrudFilters;
+};
+
 export type useTableReturnType<TData extends BaseRecord = BaseRecord> = {
     tableQueryResult: QueryObserverResult<GetListResponse<TData>>;
     sorter: CrudSorting;
@@ -57,6 +63,8 @@ export type useTableReturnType<TData extends BaseRecord = BaseRecord> = {
     setCurrent: ReactSetState<useTableReturnType["current"]>;
     pageSize: number;
     setPageSize: ReactSetState<useTableReturnType["pageSize"]>;
+    pageCount: number;
+    createLinkForSyncWithLocation: (params: SyncWithLocationParams) => string;
 };
 
 /**
@@ -124,12 +132,36 @@ export const useTable = <
     const [sorter, setSorter] = useState<CrudSorting>(
         setInitialSorters(permanentSorter, defaultSorter ?? []),
     );
-
     const [filters, setFilters] = useState<CrudFilters>(
         setInitialFilters(permanentFilter, defaultFilter ?? []),
     );
     const [current, setCurrent] = useState<number>(defaultCurrent);
     const [pageSize, setPageSize] = useState<number>(defaultPageSize);
+
+    const createLinkForSyncWithLocation = ({
+        pagination: { current, pageSize },
+        sorter,
+        filters,
+    }: SyncWithLocationParams) => {
+        const stringifyParams = stringifyTableParams({
+            pagination: {
+                pageSize,
+                current,
+            },
+            sorter,
+            filters,
+        });
+        return `${pathname}?${stringifyParams}`;
+    };
+
+    useEffect(() => {
+        if (syncWithLocation && search === "") {
+            setCurrent(defaultCurrent);
+            setPageSize(defaultPageSize);
+            setSorter(setInitialSorters(permanentSorter, defaultSorter ?? []));
+            setFilters(setInitialFilters(permanentFilter, defaultFilter ?? []));
+        }
+    }, [syncWithLocation, search]);
 
     useEffect(() => {
         if (syncWithLocation) {
@@ -154,7 +186,7 @@ export const useTable = <
                 current,
                 pageSize,
             },
-            filters: unionFilters(permanentFilter, filters),
+            filters: unionFilters(permanentFilter, [], filters),
             sort: unionSorters(permanentSorter, sorter),
         },
         queryOptions,
@@ -168,12 +200,16 @@ export const useTable = <
     });
 
     const setFiltersWithUnion = (newFilters: CrudFilters) => {
-        setFilters(() => unionFilters(permanentFilter, newFilters));
+        setFilters((prevFilters) =>
+            unionFilters(permanentFilter, newFilters, prevFilters),
+        );
     };
 
     const setSortWithUnion = (newSorter: CrudSorting) => {
         setSorter(() => unionSorters(permanentSorter, newSorter));
     };
+
+    const pageCount = Math.ceil((queryResult.data?.total ?? 0) / pageSize);
 
     return {
         tableQueryResult: queryResult,
@@ -185,5 +221,7 @@ export const useTable = <
         setCurrent,
         pageSize,
         setPageSize,
+        pageCount,
+        createLinkForSyncWithLocation,
     };
 };

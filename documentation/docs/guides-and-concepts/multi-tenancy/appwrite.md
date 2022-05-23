@@ -88,7 +88,7 @@ We need three collections for our Cake House application. Let's create these col
 
 -   Title: text
 -   Description: text
--   Image: wilcard
+-   Image: text
 -   StoreId: text
 
 `orders`
@@ -163,11 +163,8 @@ import { Select, useSelect } from "@pankod/refine-antd";
 import { StoreContext } from "context/store";
 import { IStore } from "interfaces";
 
-type SelectProps = {
-    onSelect: () => void;
-};
 
-export const StoreSelect: React.FC<SelectProps> = ({ onSelect }) => {
+export const StoreSelect: React.FC = ({ onSelect }) => {
     //highlight-start
     const [store, setStore] = useContext(StoreContext);
     //highlight-end
@@ -189,7 +186,7 @@ export const StoreSelect: React.FC<SelectProps> = ({ onSelect }) => {
             defaultValue={store}
             style={{ width: 130 }}
             onChange={handleChange}
-            onSelect={onSelect}
+            onSelect={() => false)}
         >
             {storeSelectProps.options?.map(({ value, label }) => (
                 <Select.Option key={value} value={value}>
@@ -215,9 +212,9 @@ Let's define the select component in the **refine** Sider Menu. First, we need t
 import React, { useState } from "react";
 import {
     useTitle,
-    useNavigation,
     ITreeMenu,
     CanAccess,
+    useRouterContext,
 } from "@pankod/refine-core";
 import {
     AntdLayout,
@@ -232,11 +229,11 @@ import { StoreSelect } from "components/select";
 
 export const CustomSider: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
+    const { Link } = useRouterContext();
     const Title = useTitle();
     const { SubMenu } = Menu;
     const { menuItems, selectedKey } = useMenu();
     const breakpoint = Grid.useBreakpoint();
-    const { push } = useNavigation();
 
     const isMobile = !breakpoint.lg;
     
@@ -267,15 +264,12 @@ export const CustomSider: React.FC = () => {
                 >
                     <Menu.Item
                         key={selectedKey}
-                        onClick={() => {
-                            push(route ?? "");
-                        }}
                         style={{
                             fontWeight: isSelected ? "bold" : "normal",
                         }}
                         icon={icon ?? (isRoute && <Icons.UnorderedListOutlined />)}
                     >
-                        {label}
+                        <Link to={route}>{label}</Link>
                         {!collapsed && isSelected && (
                             <div className="ant-menu-tree-arrow" />
                         )}
@@ -298,20 +292,15 @@ export const CustomSider: React.FC = () => {
             <Menu
                 selectedKeys={[selectedKey]}
                 mode="inline"
-                onClick={({ key }) => {
-                    push(key as string);
+                onClick={() => {
+                    if (!breakpoint.lg) {
+                        setCollapsed(true);
+                    }
                 }}
             >
                 //highlight-start
-                <Menu.Item
-                    key={selectedKey}
-                    icon={<Icons.AppstoreAddOutlined />}
-                >
-                    <StoreSelect
-                        onSelect={() => {
-                            setCollapsed(true);
-                        }}
-                    />
+                <Menu.Item key={"/"} icon={<Icons.AppstoreAddOutlined />}>
+                    <StoreSelect />
                 </Menu.Item>
                 //highlight-end
                 {renderTreeView(menuItems, selectedKey)}
@@ -496,6 +485,7 @@ export const CreateProduct: React.FC<CreateProductProps> = ({
                             formProps.onFinish?.({
                                 ...values,
                                 storeId: store,
+                                image: JSON.stringify(values.image),
                             })
                         );
                     }}
@@ -542,13 +532,16 @@ export const CreateProduct: React.FC<CreateProductProps> = ({
 
                                         const { $id } =
                                             await appwriteClient.storage.createFile(
+                                                "default",
+                                                rcFile.name,
                                                 rcFile,
-                                                ["*"],
-                                                ["*"],
+                                                ["role:all"],
+                                                ["role:all"],
                                             );
 
                                         const url =
                                             appwriteClient.storage.getFileView(
+                                                "default",
                                                 $id,
                                             );
 

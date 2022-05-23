@@ -72,6 +72,14 @@ title: Interface References
 | `"asc"`      | Ascending order  |
 | `"desc"`     | Descending order |
 
+## SortOrder
+```ts
+"desc" |
+    "asc" |
+    "null";
+
+```
+
 ## Pagination
 
 | Key      | Type     |
@@ -129,6 +137,14 @@ ButtonProps
 | size    | `number`                                                             |
 | percent | `number`                                                             |
 | status  | `"error"` \| `"success"` \| `"done" `\| `"uploading"` \| `"removed"` |
+
+## UseImportInputPropsType
+
+| Key     | Type                                                                 |
+| ------- | -------------------------------------------------------------------- |
+| type     | `"file"`                                                             |
+| accept    | `".cvs"`                                                             |
+| onChange     | `(event: React.ChangeEvent<HTMLInputElement>) => void`                                                             |
 
 ## SuccessErrorNotification
 

@@ -380,12 +380,14 @@ module.exports = {
             label: "Examples",
             items: [
                 "examples/tutorial-example",
+                "examples/real-world-example",
                 {
                     type: "category",
                     label: "Access Control",
                     items: [
                         "examples/access-control/casbin",
                         "examples/access-control/cerbos",
+                        "examples/access-control/permify",
                     ],
                 },
                 "examples/authorization",
@@ -567,6 +569,10 @@ module.exports = {
         {
             type: "doc",
             id: "contributing",
+        },
+        {
+            type: "doc",
+            id: "faq",
         },
     ],
 };
