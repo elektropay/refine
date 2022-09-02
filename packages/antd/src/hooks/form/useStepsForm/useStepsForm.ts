@@ -49,11 +49,12 @@ export const useStepsForm = <
     const { form, formProps } = useFormProps;
 
     const stepsPropsSunflower = useStepsFormSF<TData, TVariables>({
-        ...props,
+        isBackValidate: false,
         form: form,
         submit: (values: any) => {
-            formProps && formProps.onFinish && formProps.onFinish(values);
+            formProps?.onFinish?.(values);
         },
+        ...props,
     });
 
     return {
@@ -61,6 +62,7 @@ export const useStepsForm = <
         ...stepsPropsSunflower,
         formProps: {
             ...stepsPropsSunflower.formProps,
+            ...useFormProps.formProps,
             onValuesChange: formProps?.onValuesChange,
             onKeyUp: formProps?.onKeyUp,
         },

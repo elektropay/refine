@@ -1,5 +1,8 @@
-import { TestWrapper } from "@test";
-import { renderHook } from "@testing-library/react-hooks";
+import { CrudFilters } from "@pankod/refine-core";
+import isEqual from "lodash/isEqual";
+import { renderHook, waitFor } from "@testing-library/react";
+
+import { act, TestWrapper } from "@test";
 
 import { useTable } from "./useTable";
 
@@ -21,12 +24,12 @@ const customPagination = {
 
 describe("useTable Hook", () => {
     it("default", async () => {
-        const { result, waitFor } = renderHook(() => useTable(), {
+        const { result } = renderHook(() => useTable(), {
             wrapper: TestWrapper({}),
         });
 
         await waitFor(() => {
-            return !result.current.tableProps.loading;
+            expect(!result.current.tableProps.loading).toBeTruthy();
         });
 
         const {
@@ -38,7 +41,7 @@ describe("useTable Hook", () => {
     });
 
     it("with initial pagination parameters", async () => {
-        const { result, waitFor } = renderHook(
+        const { result } = renderHook(
             () =>
                 useTable({
                     initialCurrent: customPagination.current,
@@ -50,7 +53,7 @@ describe("useTable Hook", () => {
         );
 
         await waitFor(() => {
-            return !result.current.tableProps.loading;
+            expect(!result.current.tableProps.loading).toBeTruthy();
         });
 
         const {
@@ -60,8 +63,30 @@ describe("useTable Hook", () => {
         expect(pagination).toEqual(expect.objectContaining(customPagination));
     });
 
+    it("with disabled pagination", async () => {
+        const { result } = renderHook(
+            () =>
+                useTable({
+                    hasPagination: false,
+                }),
+            {
+                wrapper: TestWrapper({}),
+            },
+        );
+
+        await waitFor(() => {
+            expect(!result.current.tableProps.loading).toBeTruthy();
+        });
+
+        const {
+            tableProps: { pagination },
+        } = result.current;
+
+        expect(pagination).toBe(false);
+    });
+
     it("with custom resource", async () => {
-        const { result, waitFor } = renderHook(
+        const { result } = renderHook(
             () =>
                 useTable({
                     resource: "categories",
@@ -72,7 +97,7 @@ describe("useTable Hook", () => {
         );
 
         await waitFor(() => {
-            return !result.current.tableProps.loading;
+            expect(!result.current.tableProps.loading).toBeTruthy();
         });
 
         const {
@@ -83,7 +108,7 @@ describe("useTable Hook", () => {
     });
 
     it("with syncWithLocation", async () => {
-        const { result, waitFor } = renderHook(
+        const { result } = renderHook(
             () =>
                 useTable({
                     resource: "categories",
@@ -95,7 +120,7 @@ describe("useTable Hook", () => {
         );
 
         await waitFor(() => {
-            return !result.current.tableProps.loading;
+            expect(!result.current.tableProps.loading).toBeTruthy();
         });
 
         const {
@@ -106,7 +131,7 @@ describe("useTable Hook", () => {
     });
 
     it("should success data with resource", async () => {
-        const { result, waitFor } = renderHook(
+        const { result } = renderHook(
             () =>
                 useTable({
                     resource: "categories",
@@ -117,7 +142,112 @@ describe("useTable Hook", () => {
         );
 
         await waitFor(() => {
-            return result.current.tableQueryResult.isSuccess;
+            expect(result.current.tableQueryResult.isSuccess).toBeTruthy();
+        });
+    });
+
+    it("should set filters manually with `setFilters`", async () => {
+        jest.useFakeTimers();
+
+        const initialFilter: CrudFilters = [
+            {
+                field: "name",
+                operator: "contains",
+                value: "test",
+            },
+        ];
+
+        const { result } = renderHook(
+            () =>
+                useTable({
+                    resource: "categories",
+                    initialFilter,
+                }),
+            {
+                wrapper: TestWrapper({}),
+            },
+        );
+
+        const nextFilters: CrudFilters = [
+            {
+                field: "name",
+                operator: "contains",
+                value: "x",
+            },
+            {
+                field: "id",
+                operator: "gte",
+                value: 1,
+            },
+        ];
+
+        await waitFor(() => {
+            expect(result.current.tableQueryResult.isSuccess).toBeTruthy();
+        });
+
+        await act(async () => {
+            result.current.setFilters(nextFilters);
+        });
+
+        await act(async () => {
+            jest.advanceTimersToNextTimer(1);
+        });
+
+        // TODO: update tests
+        await waitFor(() => {
+            return isEqual(result.current.filters, [...nextFilters]);
+        });
+    });
+
+    it('should change behavior to `replace` when `defaultSetFilterBehavior="replace"`', async () => {
+        jest.useFakeTimers();
+
+        const { result } = renderHook(
+            () =>
+                useTable({
+                    resource: "categories",
+                    defaultSetFilterBehavior: "replace",
+                    initialFilter: [
+                        {
+                            field: "name",
+                            operator: "eq",
+                            value: "test",
+                        },
+                        {
+                            field: "id",
+                            operator: "gte",
+                            value: 1,
+                        },
+                    ],
+                }),
+            {
+                wrapper: TestWrapper({}),
+            },
+        );
+
+        const newFilters: CrudFilters = [
+            {
+                field: "name",
+                operator: "eq",
+                value: "next-test",
+            },
+            {
+                field: "other-field",
+                operator: "contains",
+                value: "other",
+            },
+        ];
+
+        await act(async () => {
+            result.current.setFilters(newFilters);
+        });
+
+        await act(async () => {
+            jest.advanceTimersToNextTimer(1);
+        });
+
+        await waitFor(() => {
+            return isEqual(result.current.filters, newFilters);
         });
     });
 });

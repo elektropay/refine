@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction } from "react";
-import { QueryObserverResult, UseQueryOptions } from "react-query";
+import { QueryObserverResult, UseQueryOptions } from "@tanstack/react-query";
 
 import {
     useResourceWithRoute,
@@ -10,6 +10,7 @@ import {
     useRedirectionAfterSubmission,
     useMutationMode,
     useOne,
+    useRefineContext,
 } from "@hooks";
 
 import {
@@ -29,6 +30,7 @@ import {
 } from "../../interfaces";
 import { UpdateParams, UseUpdateReturnType } from "../data/useUpdate";
 import { UseCreateReturnType } from "../data/useCreate";
+import { redirectPage } from "@definitions/helpers";
 
 export type ActionParams = {
     action?: "edit" | "create" | "clone";
@@ -81,8 +83,13 @@ export type UseFormReturnType<
         | UseUpdateReturnType<TData, TError, TVariables>
         | UseCreateReturnType<TData, TError, TVariables>;
     formLoading: boolean;
-    onFinish: (values: TVariables) => Promise<void>;
-    redirect: (redirect: "show" | "list" | "edit" | "create" | false) => void;
+    onFinish: (
+        values: TVariables,
+    ) => Promise<CreateResponse<TData> | UpdateResponse<TData> | void>;
+    redirect: (
+        redirect: "show" | "list" | "edit" | "create" | false,
+        idFromFunction?: BaseKey | undefined,
+    ) => void;
 };
 
 /**
@@ -123,6 +130,7 @@ export const useForm = <
     TError,
     TVariables
 > => {
+    const { options } = useRefineContext();
     const { useParams } = useRouterContext();
     const {
         resource: resourceFromRoute,
@@ -139,7 +147,10 @@ export const useForm = <
     const [id, setId] = React.useState<BaseKey | undefined>(defaultId);
 
     const resourceName = resourceFromProps ?? resourceFromRoute;
-    const action = actionFromProps ?? actionFromRoute ?? "create";
+    const action =
+        actionFromProps ??
+        (actionFromRoute === "show" ? "create" : actionFromRoute) ??
+        "create";
 
     const resourceWithRoute = useResourceWithRoute();
     const resource = resourceWithRoute(resourceName);
@@ -151,12 +162,11 @@ export const useForm = <
     const isEdit = action === "edit";
     const isClone = action === "clone";
 
-    const redirect =
-        redirectFromProps !== undefined
-            ? redirectFromProps
-            : isEdit
-            ? "list"
-            : "edit";
+    const redirect = redirectPage({
+        redirectFromProps,
+        action,
+        redirectOptions: options.redirect,
+    });
 
     const enableQuery = id !== undefined && (isEdit || isClone);
 
@@ -205,7 +215,7 @@ export const useForm = <
             });
         }
 
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<CreateResponse<TData> | void>((resolve, reject) => {
             if (mutationMode !== "pessimistic") {
                 resolve();
             }
@@ -225,11 +235,11 @@ export const useForm = <
                             onMutationSuccess(data, values, context);
                         }
 
-                        const id = data?.data?.id;
+                        const responseId = data?.data?.id;
 
-                        onSuccess(id);
+                        onSuccess(responseId);
 
-                        resolve();
+                        resolve(data);
                     },
                     onError: (error: TError, _, context) => {
                         if (onMutationError) {
@@ -276,7 +286,7 @@ export const useForm = <
         }
 
         // setTimeout is required to make onSuccess e.g. callbacks to work if component unmounts i.e. on route change
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<UpdateResponse<TData> | void>((resolve, reject) => {
             if (mutationMode !== "pessimistic") {
                 resolve();
             }
@@ -291,7 +301,7 @@ export const useForm = <
                             onSuccess();
                         }
 
-                        resolve();
+                        resolve(data);
                     },
                     onError: (error: TError, _, context) => {
                         if (onMutationError) {
@@ -323,7 +333,7 @@ export const useForm = <
         queryResult,
         id,
         setId,
-        redirect: (redirect) => {
+        redirect: (redirect, idFromFunction?: BaseKey | undefined) => {
             handleSubmitWithRedirect({
                 redirect:
                     redirect !== undefined
@@ -332,7 +342,7 @@ export const useForm = <
                         ? "list"
                         : "edit",
                 resource,
-                id,
+                id: idFromFunction ?? id,
             });
         },
     };

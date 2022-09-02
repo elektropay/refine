@@ -11,9 +11,11 @@ import gif from '@site/static/img/guides-and-concepts/custom-pages/gif.gif'
 
 :::caution
 
-This document is related to how to create custom pages for **react** applications. Since **Nextjs** has a file system based router built on the page concept, you can create your custom pages under the `pages` folder.
+This document is related to how to create custom pages for **react** applications. Since **Nextjs** and **Remix** has a file system based router built on the page concept, you can create your custom pages under the `pages` or `routes` folder.
 
 [Refer to the `Nextjs Guide` documentation for detailed information. &#8594][ssrNextjs]
+
+[Refer to the `Remix Guide` documentation for detailed information. &#8594][ssrRemix]
 :::
 
 <br />
@@ -523,16 +525,16 @@ const PostReview = () => {
 };
 
 interface ICategory {
-    id: string;
+    id: number;
     title: string;
 }
 
 interface IPost {
-    id: string;
+    id: number;
     title: string;
     content: string;
     status: "published" | "draft" | "rejected";
-    category: ICategory;
+    category: { id: number };
 }
 ```
 
@@ -825,13 +827,12 @@ export const PostReview = () => {
 </div>
 <br />
 
-## Live Codesandbox Example
+## Live StackBlitz Example
 
-<iframe src="https://codesandbox.io/embed/custom-pages-example-rn2ly?autoresize=1&fontsize=14&theme=dark&view=preview"
+<iframe loading="lazy" src="https://stackblitz.com//github/pankod/refine/tree/master/examples/customPages?embed=1&view=preview&theme=dark&preset=node"
     style={{width: "100%", height:"80vh", border: "0px", borderRadius: "8px", overflow:"hidden"}}
     title="custom-pages-example"
-    allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
-    sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
 ></iframe>
 
-[ssrNextjs]: /guides-and-concepts/ssr-nextjs.md
+[ssrNextjs]: /docs/guides-and-concepts/ssr/nextjs
+[ssrRemix]: /docs/guides-and-concepts/ssr/remix

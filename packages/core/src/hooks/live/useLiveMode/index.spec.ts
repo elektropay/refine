@@ -1,16 +1,15 @@
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook } from "@testing-library/react";
 
 import { TestWrapper } from "@test";
 
 import { useLiveMode } from "./";
+import { defaultRefineOptions } from "@contexts/refine";
 import { IRefineContextProvider } from "../../../interfaces";
 
 const mockRefineProvider: IRefineContextProvider = {
     hasDashboard: false,
-    mutationMode: "pessimistic",
-    warnWhenUnsavedChanges: false,
-    syncWithLocation: false,
-    undoableTimeout: 500,
+    ...defaultRefineOptions,
+    options: defaultRefineOptions,
 };
 
 describe("useLiveMode Hook", () => {

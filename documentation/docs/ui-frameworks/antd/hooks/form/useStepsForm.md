@@ -44,12 +44,12 @@ export const PostCreate: React.FC = () => {
 };
 
 interface ICategory {
-    id: string;
+    id: number;
     title: string;
 }
 
 interface IPost {
-    id: string;
+    id: number;
     title: string;
     status: "published" | "draft" | "rejected";
 }
@@ -442,7 +442,7 @@ export const PostCreate: React.FC = () => {
 | id                                                           | Record id for fetching                                                                                                                                             | [`BaseKey`](/core/interfaces.md#basekey)                                        | Id that it reads from the URL                                                                                                        |
 | defaultCurrent                                   | Default step, counting from 0                                                                                                                                                           | `number`                                                                       | `0`        |
 | total                                            | Total count of steps steps                                                                                                                                                                | `number`                                                                       | `0`        |
-| isBackValidate                                   | Should validate if went to the previous step step                                                                                                                                                      | `boolean`                                                                      | `true`     |
+| isBackValidate                                   | Should validate if went to the previous step step                                                                                                                                                      | `boolean`                                                                      | `false`     |
 | form                                             | Ant Design form instance                                                                                                                                                                | [`FormInstance<TVariables>`](https://ant.design/components/form/#FormInstance) |            |
 | mutationMode                                     | [Determines when mutations are executed](guides-and-concepts/mutation-mode.md). If not explicitly configured, it is read from the mutation mode config of the resource in current route | `"pessimistic"` \| `"optimistic"` \| `"undoable"`                              |            |
 | onMutationError                                  | Called when a [mutation](https://react-query.tanstack.com/reference/useMutation) encounters an error                                                                                      | `(error: any, variables: any, context: any) => void`                           |            |
@@ -491,13 +491,11 @@ export const PostCreate: React.FC = () => {
 | TError     | Custom error object that extends [`HttpError`][HttpError]        | [`HttpError`][HttpError]   |
 | TVariables | Values for params.                                               | `{}`                       |
 
-## Live Codesandbox Example
+## Live StackBlitz Example
 
-<iframe src="https://codesandbox.io/embed/refine-use-steps-form-example-0nfgq?autoresize=1&fontsize=14&theme=dark&view=preview"
+<iframe loading="lazy" src="https://stackblitz.com//github/pankod/refine/tree/master/examples/form/antd/useStepsForm?embed=1&view=preview&theme=dark&preset=node"
     style={{width: "100%", height:"80vh", border: "0px", borderRadius: "8px", overflow:"hidden"}}
     title="refine-use-steps-form-example"
-    allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
-    sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
 ></iframe>
 
 [BaseRecord]: /core/interfaces.md#baserecord

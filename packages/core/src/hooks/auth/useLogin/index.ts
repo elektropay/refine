@@ -1,11 +1,11 @@
 import React from "react";
-import { useMutation, UseMutationResult } from "react-query";
+import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import qs from "qs";
 
+import { useNavigation, useRouterContext, useNotification } from "@hooks";
 import { AuthContext } from "@contexts/auth";
 
 import { IAuthContext, TLoginData } from "../../../interfaces";
-import { useNavigation, useRouterContext, useNotification } from "@hooks";
 
 /**
  * `useLogin` calls `login` method from {@link https://refine.dev/docs/api-references/providers/auth-provider `authProvider`} under the hood.
@@ -30,10 +30,12 @@ export const useLogin = <TVariables = {}>(): UseMutationResult<
     const { search } = useLocation();
     const { close, open } = useNotification();
 
-    const { to } = qs.parse(search?.substring(1));
+    const { to } = qs.parse(search, {
+        ignoreQueryPrefix: true,
+    });
 
     const queryResponse = useMutation<TLoginData, Error, TVariables, unknown>(
-        "useLogin",
+        ["useLogin"],
         loginFromContext,
         {
             onSuccess: (redirectPathFromAuth) => {
@@ -42,16 +44,16 @@ export const useLogin = <TVariables = {}>(): UseMutationResult<
                 }
 
                 if (redirectPathFromAuth !== false) {
-                    if (redirectPathFromAuth) {
+                    if (typeof redirectPathFromAuth === "string") {
                         replace(redirectPathFromAuth);
                     } else {
                         replace("/");
                     }
                 }
-                close("login-error");
+                close?.("login-error");
             },
             onError: (error: any) => {
-                open({
+                open?.({
                     message: error?.name || "Login Error",
                     description: error?.message || "Invalid credentials",
                     key: "login-error",

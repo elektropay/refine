@@ -1,4 +1,4 @@
-import { useLogin } from "@pankod/refine-core";
+import { HttpError, useLogin } from "@pankod/refine-core";
 import { useForm } from "@pankod/refine-react-hook-form";
 import routerProvider from "@pankod/refine-react-router-v6";
 
@@ -6,6 +6,14 @@ import { ErrorList } from "components";
 
 const { Link } = routerProvider;
 
+type IRegisterVariables = {
+    user: {
+        password: string;
+        username: string;
+        email: string;
+    };
+    api: Record<string, string>;
+};
 export const RegisterPage: React.FC = () => {
     const { mutate: login, isLoading: isLoadingLogin } = useLogin();
 
@@ -19,7 +27,7 @@ export const RegisterPage: React.FC = () => {
         setError,
         clearErrors,
         formState: { errors },
-    } = useForm({
+    } = useForm<IRegisterVariables, HttpError, IRegisterVariables>({
         refineCoreProps: {
             resource: "users",
             redirect: false,
@@ -31,7 +39,7 @@ export const RegisterPage: React.FC = () => {
 
     return (
         <div className="auth-page">
-            <div className="container page">
+            <div className="page container">
                 <div className="row">
                     <div className="col-md-6 offset-md-3 col-xs-12">
                         <h1 className="text-xs-center">Sign up</h1>

@@ -8,6 +8,7 @@ import resourceFirst from '@site/static/img/tutorial/resource-1.png';
 import resourceSecond from '@site/static/img/tutorial/resource-2.png';
 import createGif from '@site/static/img/tutorial/create.gif';
 import editGif from '@site/static/img/tutorial/edit.gif';
+import filter from '@site/static/img/tutorial/filter.gif';
 import showGif from '@site/static/img/tutorial/show.gif';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -81,40 +82,8 @@ This tutorial assumes your project is configured for absolute imports. Since CRA
 First, run the **superplate** with the following command:
 
 ```
-npx superplate-cli -p refine-react tutorial
+npx superplate-cli -o refine-antd tutorial
 ```
-
-Select the following options to complete the _CLI wizard_:
-
-```
-? Select your project type:
-❯ refine-react
-
-? What will be the name of your app:
-tutorial
-
-? Package manager:
-❯ Npm
-
-? Do you want to use an UI Framework?:
-❯ Yes, I want Ant Design
-
-? Do you want to customize the theme?:
-❯ No (Ant Design default theme)
-
-? Data Provider :
-❯ REST API
-
-? Auth Provider :
-❯ None
-
-? Do you want to add an example page?:
-❯ No
-
-? i18n - Internationalization:
-❯ No
-```
-
 </TabItem>
 </Tabs>
 
@@ -175,9 +144,11 @@ Fake REST API is based on [JSON Server Project](https://github.com/typicode/json
 -   [Hasura](https://github.com/pankod/refine/tree/master/packages/hasura)
 -   [Nhost](https://github.com/pankod/refine/tree/master/packages/nhost)
 -   [Appwrite](https://github.com/pankod/refine/tree/master/packages/appwrite)
+-   [Medusa](https://github.com/pankod/refine/tree/master/packages/medusa)
 -   [Altogic](https://github.com/pankod/refine/tree/master/packages/altogic)
 
 ### Community ❤️
+
 -   [Firebase](https://github.com/rturan29/refine-firebase) by [rturan29](https://github.com/rturan29)
 -   [Directus](https://github.com/tspvivek/refine-directus) by [tspvivek](https://github.com/tspvivek)
 
@@ -188,9 +159,14 @@ Fake REST API is based on [JSON Server Project](https://github.com/typicode/json
 
 Replace the contents of `App.tsx` with the following code:
 
-```tsx  title="src/App.tsx"
+```tsx title="src/App.tsx"
 import { Refine } from "@pankod/refine-core";
-import { Layout, ReadyPage, notificationProvider, ErrorComponent } from "@pankod/refine-antd";
+import {
+    Layout,
+    ReadyPage,
+    notificationProvider,
+    ErrorComponent,
+} from "@pankod/refine-antd";
 import routerProvider from "@pankod/refine-react-router-v6";
 import dataProvider from "@pankod/refine-simple-rest";
 
@@ -216,7 +192,7 @@ export default App;
 
 `<Refine/>` is the root component of a **refine** application. Using the [`dataProvider`](/core/providers/data-provider.md) prop, we made our **Simple REST Dataprovider** available to the entire application.
 
-Run the following command to install the required package:
+Run the following command to launch the app in development mode:
 
 <Tabs
 defaultValue="superplate"
@@ -297,7 +273,12 @@ Now, add the highlighted code to your `App.tsx` to connect to the endpoint.
 
 ```tsx title="src/App.tsx"
 import { Refine } from "@pankod/refine-core";
-import { Layout, ReadyPage, notificationProvider, ErrorComponent } from "@pankod/refine-antd";
+import {
+    Layout,
+    ReadyPage,
+    notificationProvider,
+    ErrorComponent,
+} from "@pankod/refine-antd";
 import routerProvider from "@pankod/refine-react-router-v6";
 import dataProvider from "@pankod/refine-simple-rest";
 
@@ -325,7 +306,7 @@ export const App: React.FC = () => {
 `resources` is a property of `<Refine/>` representing API Endpoints. The `name` property of every single resource should match one of the endpoints in your API!
 :::
 
-Instead of showing the welcome page, the application should redirect now? to an URL defined by the `name` property. Open your application to check that the URL is routed to **/posts**:
+Instead of showing the welcome page, the application should redirect now to an URL defined by the `name` property. Open your application to check that the URL is routed to **/posts**:
 
 <>
 
@@ -357,7 +338,7 @@ Create a new folder named _"interfaces"_ under _"/src"_ if you don't already hav
 
 ```ts title="interfaces/index.d.ts"
 export interface IPost {
-    id: string;
+    id: number;
     title: string;
     status: "published" | "draft" | "rejected";
     createdAt: string;
@@ -368,7 +349,7 @@ We'll be using **title**, **status** and **createdAt** fields of every **post** 
 
 Now, create a new folder named _"pages/posts"_ under _"/src"_. Under that folder, create a _"list.tsx"_ file with the following code:
 
-```tsx title="pages/posts/list.tsx"
+```tsx title="src/pages/posts/list.tsx"
 import {
     List,
     TextField,
@@ -437,7 +418,12 @@ Finally, we are ready to add `<PostList>` to our resource. Add the highlighted l
 
 ```tsx title="src/App.tsx"
 import { Refine } from "@pankod/refine-core";
-import { Layout, ReadyPage, notificationProvider, ErrorComponent } from "@pankod/refine-antd";
+import {
+    Layout,
+    ReadyPage,
+    notificationProvider,
+    ErrorComponent,
+} from "@pankod/refine-antd";
 import routerProvider from "@pankod/refine-react-router-v6";
 import dataProvider from "@pankod/refine-simple-rest";
 
@@ -465,23 +451,18 @@ export const App: React.FC = () => {
 Note you will need a few more files which help `src/App.tsx` to find your pages and posts. In the `/pages` folder, put this `index.tsx` file in it which allows everything in the `posts` folder to be used elsewhere.
 
 ```tsx title="src/pages/index.tsx"
-
 export * from "./posts";
-
 ```
 
 <br />
 
 Similarly, put a file in the `/src/pages/posts` folder which accomplishes the same function. We will use the commented out code later as we add more capabilities to our app. Remember as you add functions, uncomment each appropriate line.
 
-
 ```tsx title="src/pages/posts/index.tsx"
-
 export * from "./list";
 // export * from "./edit";
 // export * from "./create";
 // export * from "./show";
-
 ```
 
 <br />
@@ -507,7 +488,7 @@ On the next step, we are going to add a category field to the table which involv
 
 ## Handling relationships
 
-Remember the records from `/posts` endpoint that had a category id field?
+Remember the records from `/posts` endpoint that had a category id field.
 
 ```ts title="https://api.fake-rest.refine.dev/posts/1"
 ...
@@ -531,31 +512,31 @@ The category title data can be obtained from the `/categories` endpoint for each
 
 <br />
 
-At this point, we need to join records from different resources. For this, we're goint to use the refine hook `useMany`.
+At this point, we need to join records from different resources. For this, we're going to use the refine hook `useMany`.
 
 Before we start, just edit our interface for the new `ICategory` type:
 
 ```ts title="interfaces/index.d.ts"
 // highlight-start
 export interface ICategory {
-    id: string;
+    id: number;
     title: string;
 }
 // highlight-end
 
 export interface IPost {
-    id: string;
+    id: number;
     title: string;
     status: "published" | "draft" | "rejected";
-// highlight-next-line
-    category: { id: string };
+    // highlight-next-line
+    category: { id: number };
     createdAt: string;
 }
 ```
 
 So we can update our `list.tsx` with the highlighted lines:
 
-```tsx title="pages/posts/list.tsx"
+```tsx title="src/pages/posts/list.tsx"
 // highlight-next-line
 import { useMany } from "@pankod/refine-core";
 import {
@@ -658,7 +639,7 @@ We're done with displaying `post` records on our `<Table>`. Let's add search and
 
 We are going to use `<Table.Column>`'s [`filterDropdown`](https://ant.design/components/table/#Column) property and `<FilterDropdown>` component as following:
 
-```tsx title="pages/posts/list.tsx"
+```tsx title="src/pages/posts/list.tsx"
 import { useMany } from "@pankod/refine-core";
 import {
     List,
@@ -759,13 +740,23 @@ export const PostList: React.FC = () => {
 `defaultValue` is used to get the value for the current item. It's not affected by search, sort and filter parameters.
 :::
 
+<div class="img-container">
+    <div class="window">
+        <div class="control red"></div>
+        <div class="control orange"></div>
+        <div class="control green"></div>
+    </div>
+    <img src={filter} alt="Filters" />
+</div>
+<br/>
+
 ## Showing a single record
 
 At this point we are able to list all _post_ records on the table component with pagination, sorting and filtering functionality. Next, we are going to add a _details page_ to fetch and display data from a single record.
 
 Let's create a `<PostShow>` component on `/pages/posts` folder:
 
-```tsx title="pages/posts/show.tsx"
+```tsx title="src/pages/posts/show.tsx"
 import { useShow, useOne } from "@pankod/refine-core";
 import { Show, Typography, Tag } from "@pankod/refine-antd";
 
@@ -809,8 +800,16 @@ Now we can add the newly created component to our resource with `show` prop:
 
 ```tsx title="src/App.tsx"
 import { Refine } from "@pankod/refine-core";
+import {
+    Layout,
+    ReadyPage,
+    notificationProvider,
+    ErrorComponent,
+} from "@pankod/refine-antd";
 import routerProvider from "@pankod/refine-react-router-v6";
 import dataProvider from "@pankod/refine-simple-rest";
+
+import "@pankod/refine-antd/dist/styles.min.css";
 
 // highlight-next-line
 import { PostList, PostShow } from "./pages/posts";
@@ -824,15 +823,15 @@ export const App: React.FC = () => {
             ReadyPage={ReadyPage}
             notificationProvider={notificationProvider}
             catchAll={<ErrorComponent />}
-            // highlight-start
             resources={[
                 {
                     name: "posts",
                     list: PostList,
+                    // highlight-start
                     show: PostShow,
+                    // highlight-end
                 },
             ]}
-            // highlight-end
         />
     );
 };
@@ -920,10 +919,10 @@ export const PostList: React.FC = () => {
                         </FilterDropdown>
                     )}
                 />
+                // highlight-start
                 <Table.Column<IPost>
                     title="Actions"
                     dataIndex="actions"
-                    // highlight-start
                     render={(_text, record): React.ReactNode => {
                         return (
                             <ShowButton
@@ -933,15 +932,15 @@ export const PostList: React.FC = () => {
                             />
                         );
                     }}
-                    // highlight-end
                 />
+                // highlight-end
             </Table>
         </List>
     );
 };
 ```
 
-✳️ `useShow()` is a **refine** hook used to fetch a single record data. The `queryResult` has the response and also `isLoading` state.
+✳️ `useShow()` is a **refine** hook used to fetch a single record of data. The `queryResult` has the response and also `isLoading` state.
 
 [Refer to the `useShow` documentation for detailed usage information. &#8594](/core/hooks/show/useShow.md)
 
@@ -950,10 +949,10 @@ export const PostList: React.FC = () => {
 [Refer to the `useOne` documentation for detailed usage information. &#8594](/core/hooks/data/useOne.md)
 
 :::caution attention
-`useShow()` is the preferred hook for fetching data from current resource. For query foreign resources you may use the low-level `useOne()` hook.
+`useShow()` is the preferred hook for fetching data from the current resource. To query foreign resources you may use the low-level `useOne()` hook.
 :::
 
-Since we've got access to raw data returning from `useShow()`, there is no restriction how it's displayed on your components. If you prefer presenting your content with a nicer wrapper, **refine** provides you
+Since we've got access to raw data returning from `useShow()`, there is no restriction on how it's displayed on your components. If you prefer presenting your content with a nicer wrapper, **refine** provides you
 the `<Show>` component which has extra features like `list` and `refresh` buttons.
 
 [Refer to the `<Show>` documentation for detailed usage information. &#8594](/ui-frameworks/antd/components/basic-views/show.md)
@@ -972,12 +971,19 @@ the `<Show>` component which has extra features like `list` and `refresh` button
 
 ## Editing a record
 
-Until this point, we were basically working with read operations such as fetching and displaying data from resources. From now on, we are going to start creating and updating records by using **refine**.
+Until this point, we were basically working with reading operations such as fetching and displaying data from resources. From now on, we are going to start creating and updating records by using **refine**.
 
 Let's start by creating a new `<PostEdit>` page responsible for editing a single record:
 
-```tsx title="pages/posts/edit.tsx"
-import { useForm, Form, Input, Select, Edit, useSelect } from "@pankod/refine-antd";
+```tsx title="src/pages/posts/edit.tsx"
+import {
+    useForm,
+    Form,
+    Input,
+    Select,
+    Edit,
+    useSelect,
+} from "@pankod/refine-antd";
 import { IPost } from "interfaces";
 
 export const PostEdit: React.FC = () => {
@@ -991,10 +997,26 @@ export const PostEdit: React.FC = () => {
     return (
         <Edit saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout="vertical">
-                <Form.Item label="Title" name="title">
+                <Form.Item
+                    label="Title"
+                    name="title"
+                    rules={[
+                        {
+                            required: true,
+                        },
+                    ]}
+                >
                     <Input />
                 </Form.Item>
-                <Form.Item label="Status" name="status">
+                <Form.Item
+                    label="Status"
+                    name="status"
+                    rules={[
+                        {
+                            required: true,
+                        },
+                    ]}
+                >
                     <Select
                         options={[
                             {
@@ -1012,7 +1034,15 @@ export const PostEdit: React.FC = () => {
                         ]}
                     />
                 </Form.Item>
-                <Form.Item label="Category" name={["category", "id"]}>
+                <Form.Item
+                    label="Category"
+                    name={["category", "id"]}
+                    rules={[
+                        {
+                            required: true,
+                        },
+                    ]}
+                >
                     <Select {...categorySelectProps} />
                 </Form.Item>
             </Form>
@@ -1027,7 +1057,12 @@ Now we can add the newly created component to our resource with `edit` prop:
 
 ```tsx title="src/App.tsx"
 import { Refine } from "@pankod/refine-core";
-import { Layout, ReadyPage, notificationProvider, ErrorComponent } from "@pankod/refine-antd";
+import {
+    Layout,
+    ReadyPage,
+    notificationProvider,
+    ErrorComponent,
+} from "@pankod/refine-antd";
 import routerProvider from "@pankod/refine-react-router-v6";
 import dataProvider from "@pankod/refine-simple-rest";
 
@@ -1045,24 +1080,24 @@ export const App: React.FC = () => {
             ReadyPage={ReadyPage}
             notificationProvider={notificationProvider}
             catchAll={<ErrorComponent />}
-            // highlight-start
             resources={[
                 {
                     name: "posts",
                     list: PostList,
-                    edit: PostEdit,
                     show: PostShow,
+                    // highlight-start
+                    edit: PostEdit,
+                    // highlight-end
                 },
             ]}
-            // highlight-end
         />
     );
 };
 ```
 
-We are going to need an _edit_ button on each row to diplay the `<PostEdit>` component. **refine** doesn't automatically add one, so we have to update our `<PostList>` component to add a `<EditButton>` for each record:
+We are going to need an _edit_ button on each row to display the `<PostEdit>` component. **refine** doesn't automatically add one, so we have to update our `<PostList>` component to add a `<EditButton>` for each record:
 
-```tsx title="components/pages/posts.tsx"
+```tsx title="src/pages/posts/list.tsx"
 import { useMany } from "@pankod/refine-core";
 import {
     List,
@@ -1178,7 +1213,7 @@ You can try using edit buttons which will trigger the edit forms for each record
 Let's see what's going on our `<PostEdit>` component in detail:
 
 ✳️ `useForm` is a refine hook for handling form data.
-On the example it returns `formProps` and `saveButtonProps`, where the former includes all necessary props to build the form and the latter has the ones for the save button.
+In the example, it returns `formProps` and `saveButtonProps`, where the former includes all necessary props to build the form and the latter has the ones for the save button.
 
 :::caution Attention
 In edit page, `useForm` hook initializes the form with current record values.
@@ -1191,7 +1226,7 @@ In edit page, `useForm` hook initializes the form with current record values.
 
 ✳️ Form data is set automatically, whenever children inputs `<Form.Item>`'s are edited.
 
-✳️ Save button submits the form by executing the `useUpdate` method provided by the [`dataProvider`](/core/providers/data-provider.md). After a succesfull response, the application will be redirected to the listing page.
+✳️ Save button submits the form by executing the `useUpdate` method provided by the [`dataProvider`](/core/providers/data-provider.md). After a successfull response, the application will be redirected to the listing page.
 
 <br />
 
@@ -1215,9 +1250,8 @@ Creating a record in **refine** follows a similar flow as editing records.
 
 First, we'll create a `<PostCreate>` page:
 
-```tsx title="pages/posts/create.tsx"
+```tsx title="src/pages/posts/create.tsx"
 import {
-    // highlight-next-line
     Create,
     Form,
     Input,
@@ -1235,13 +1269,28 @@ export const PostCreate = () => {
     });
 
     return (
-        // highlight-start
         <Create saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout="vertical">
-                <Form.Item label="Title" name="title">
+                <Form.Item
+                    label="Title"
+                    name="title"
+                    rules={[
+                        {
+                            required: true,
+                        },
+                    ]}
+                >
                     <Input />
                 </Form.Item>
-                <Form.Item label="Status" name="status">
+                <Form.Item
+                    label="Status"
+                    name="status"
+                    rules={[
+                        {
+                            required: true,
+                        },
+                    ]}
+                >
                     <Select
                         options={[
                             {
@@ -1259,12 +1308,19 @@ export const PostCreate = () => {
                         ]}
                     />
                 </Form.Item>
-                <Form.Item label="Category" name={["category", "id"]}>
+                <Form.Item
+                    label="Category"
+                    name={["category", "id"]}
+                    rules={[
+                        {
+                            required: true,
+                        },
+                    ]}
+                >
                     <Select {...categorySelectProps} />
                 </Form.Item>
             </Form>
         </Create>
-        // highlight-end
     );
 };
 ```
@@ -1277,7 +1333,12 @@ After creating the `<PostCreate>` component, add it to resource with `create` pr
 
 ```tsx title="src/App.tsx"
 import { Refine } from "@pankod/refine-core";
-import { Layout, ReadyPage, notificationProvider, ErrorComponent } from "@pankod/refine-antd";
+import {
+    Layout,
+    ReadyPage,
+    notificationProvider,
+    ErrorComponent,
+} from "@pankod/refine-antd";
 import dataProvider from "@pankod/refine-simple-rest";
 import routerProvider from "@pankod/refine-react-router-v6";
 
@@ -1313,7 +1374,7 @@ export const App: React.FC = () => {
 
 <br />
 
-And that's it! Try it on browser and see if you can create new posts from scratch.
+And that's it! Try it on the browser and see if you can create new posts from scratch.
 
 We should notice some minor differences from the edit example:
 
@@ -1340,9 +1401,9 @@ We should notice some minor differences from the edit example:
 
 Deleting a record can be done in two ways.
 
-First way is adding an delete button on each row since _refine_ doesn't automatically add one, so we have to update our `<PostList>` component to add a `<DeleteButton>` for each record:
+The first way is adding a delete button on each row since _refine_ doesn't automatically add one, so we have to update our `<PostList>` component to add a `<DeleteButton>` for each record:
 
-```tsx title="components/pages/posts.tsx"
+```tsx title="src/pages/posts/list.tsx"
 import { useMany } from "@pankod/refine-core";
 import {
     List,
@@ -1464,7 +1525,12 @@ The second way is showing delete button in `<PostEdit>` component. To show delet
 
 ```tsx title="src/App.tsx"
 import { Refine } from "@pankod/refine-core";
-import { Layout, ReadyPage, notificationProvider, ErrorComponent } from "@pankod/refine-antd";
+import {
+    Layout,
+    ReadyPage,
+    notificationProvider,
+    ErrorComponent,
+} from "@pankod/refine-antd";
 import routerProvider from "@pankod/refine-react-router-v6";
 import dataProvider from "@pankod/refine-simple-rest";
 
@@ -1499,15 +1565,13 @@ export const App: React.FC = () => {
 
 After adding `canDelete` prop, `<DeleteButton>` will appear in edit form.
 
-## Live Codesandbox Example
+## Live StackBlitz Example
 
-Our tutorial is complete. Below you'll find a live Codesandbox example displaying what we have done so far:
+Our tutorial is complete. Below you'll find a Live StackBlitz Example displaying what we have done so far:
 
-<iframe src="https://codesandbox.io/embed/tutorial-ov79u?autoresize=1&fontsize=14&theme=dark&view=preview"
+<iframe loading="lazy" src="https://stackblitz.com//github/pankod/refine/tree/master/examples/tutorial/antd?embed=1&view=preview&theme=dark&preset=node"
     style={{width: "100%", height:"80vh", border: "0px", borderRadius: "8px", overflow:"hidden"}}
     title="refine-tutorial"
-    allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
-    sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
 ></iframe>
 
 ## Next Steps

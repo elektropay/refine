@@ -1,4 +1,8 @@
-import { useMutation, UseMutationResult, useQueryClient } from "react-query";
+import {
+    useMutation,
+    UseMutationResult,
+    useQueryClient,
+} from "@tanstack/react-query";
 import pluralize from "pluralize";
 
 import {
@@ -76,7 +80,6 @@ export const useUpdateMany = <
         undoableTimeout: undoableTimeoutContext,
     } = useMutationMode();
     const { mutate: checkError } = useCheckError();
-
     const { notificationDispatch } = useCancelNotification();
     const publish = usePublish();
     const handleNotification = useHandleNotification();
@@ -273,7 +276,6 @@ export const useUpdateMany = <
             },
             onSettled: (_data, _error, { ids, resource, dataProviderName }) => {
                 // invalidate the cache for the list and many queries:
-
                 invalidateStore({
                     resource,
                     invalidates: ["list", "many"],
@@ -294,10 +296,18 @@ export const useUpdateMany = <
                     payload: { id: ids, resource },
                 });
             },
-            onSuccess: (_data, { ids, resource, successNotification }) => {
+            onSuccess: (
+                data,
+                { ids, resource, successNotification, values },
+            ) => {
                 const resourceSingular = pluralize.singular(resource);
 
-                handleNotification(successNotification, {
+                const notificationConfig =
+                    typeof successNotification === "function"
+                        ? successNotification(data, { ids, values }, resource)
+                        : successNotification;
+
+                handleNotification(notificationConfig, {
                     key: `${ids}-${resource}-notification`,
                     description: translate(
                         "notifications.success",
@@ -327,11 +337,10 @@ export const useUpdateMany = <
             },
             onError: (
                 err: TError,
-                { ids, resource, errorNotification },
+                { ids, resource, errorNotification, values },
                 context,
             ) => {
                 // set back the queries to the context:
-
                 if (context) {
                     for (const query of context.previousQueries) {
                         queryClient.setQueryData(query[0], query[1]);
@@ -343,7 +352,12 @@ export const useUpdateMany = <
 
                     const resourceSingular = pluralize.singular(resource);
 
-                    handleNotification(errorNotification, {
+                    const notificationConfig =
+                        typeof errorNotification === "function"
+                            ? errorNotification(err, { ids, values }, resource)
+                            : errorNotification;
+
+                    handleNotification(notificationConfig, {
                         key: `${ids}-${resource}-updateMany-error-notification`,
                         message: translate(
                             "notifications.editError",

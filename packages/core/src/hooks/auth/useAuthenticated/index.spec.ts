@@ -1,9 +1,10 @@
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook, waitFor } from "@testing-library/react";
 import ReactRouterDom from "react-router-dom";
 
 import { TestWrapper } from "@test";
 
 import { useAuthenticated } from "./";
+import { act } from "react-dom/test-utils";
 
 const mHistory = jest.fn();
 
@@ -14,7 +15,7 @@ jest.mock("react-router-dom", () => ({
 
 describe("useAuthenticated Hook", () => {
     it("returns authenticated true", async () => {
-        const { result, waitFor } = renderHook(() => useAuthenticated(), {
+        const { result } = renderHook(() => useAuthenticated(), {
             wrapper: TestWrapper({
                 authProvider: {
                     login: () => Promise.resolve(),
@@ -28,15 +29,18 @@ describe("useAuthenticated Hook", () => {
         });
 
         await waitFor(() => {
-            return result.current?.isFetched;
+            expect(result.current.isSuccess).toBeTruthy();
         });
-
-        expect(result.current?.isSuccess).toBeTruthy();
     });
 
     it("returns authenticated false and called checkError", async () => {
+        jest.spyOn(console, "error").mockImplementation((message) => {
+            if (message?.message === "Not Authenticated") return;
+            console.warn(message);
+        });
+
         const checkErrorMock = jest.fn();
-        const { result, waitFor } = renderHook(() => useAuthenticated(), {
+        const { result } = renderHook(() => useAuthenticated(), {
             wrapper: TestWrapper({
                 authProvider: {
                     login: () => Promise.resolve(),
@@ -51,15 +55,18 @@ describe("useAuthenticated Hook", () => {
         });
 
         await waitFor(() => {
-            return result.current?.isFetched;
+            expect(result.current.isError).toBeTruthy();
         });
-
-        expect(result.current?.isError).toBeTruthy();
     });
 
     it("returns authenticated false and called checkError with custom redirect path", async () => {
+        jest.spyOn(console, "error").mockImplementation((message) => {
+            if (message?.redirectPath === "/custom-url") return;
+            console.warn(message);
+        });
+
         const checkErrorMock = jest.fn();
-        const { result, waitFor } = renderHook(() => useAuthenticated(), {
+        const { result } = renderHook(() => useAuthenticated(), {
             wrapper: TestWrapper({
                 authProvider: {
                     login: () => Promise.resolve(),
@@ -74,11 +81,11 @@ describe("useAuthenticated Hook", () => {
         });
 
         await waitFor(() => {
-            return result.current?.isFetched;
+            expect(result.current.isError).toBeTruthy();
         });
 
-        expect(result.current?.isError).toBeTruthy();
-
-        expect(mHistory).toBeCalledWith("/custom-url", { replace: true });
+        await act(async () => {
+            expect(mHistory).toBeCalledWith("/custom-url", { replace: true });
+        });
     });
 });

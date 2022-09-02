@@ -1,7 +1,7 @@
 import { RcFile, UploadFile } from "antd/lib/upload/interface";
 import { act } from "react-dom/test-utils";
 import { notification } from "antd";
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook } from "@testing-library/react";
 import { TestWrapper, MockJSONServer } from "@test";
 
 import { useImport } from ".";
@@ -17,15 +17,16 @@ const file = new File(
     { type: "text/csv" },
 );
 
-afterEach(() => {
-    jest.clearAllMocks();
-    jest.useRealTimers();
-});
-
 describe("useImport hook", () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        jest.useFakeTimers();
+    });
+
     const notificationOpenSpy = jest.spyOn(notification, "open");
     const notificationCloseSpy = jest.spyOn(notification, "close");
-    it("should return false from uploadProps.beforeUpload callback", () => {
+
+    it("should return false from uploadProps.beforeUpload callback", async () => {
         const { result } = renderHook(
             () =>
                 useImport({
@@ -39,6 +40,10 @@ describe("useImport hook", () => {
             },
         );
 
+        await act(async () => {
+            jest.advanceTimersToNextTimer(1);
+        });
+
         const beforeUploadResult = result.current.uploadProps.beforeUpload?.(
             file as unknown as RcFile,
             [],
@@ -48,6 +53,8 @@ describe("useImport hook", () => {
     });
 
     it("should open notification", async () => {
+        jest.useFakeTimers();
+
         const { result } = renderHook(
             () =>
                 useImport({
@@ -63,17 +70,22 @@ describe("useImport hook", () => {
         );
 
         await act(async () => {
-            jest.useFakeTimers();
+            jest.advanceTimersToNextTimer(1);
+        });
 
+        await act(async () => {
             await result.current.uploadProps.onChange?.({
                 fileList: [],
                 file: file as unknown as UploadFile,
             });
 
-            jest.runAllTimers();
+            jest.advanceTimersToNextTimer(1);
         });
+        jest.runAllTimers();
 
-        expect(notificationOpenSpy).toBeCalled();
-        expect(notificationCloseSpy).toBeCalled();
+        await act(async () => {
+            expect(notificationOpenSpy).toBeCalled();
+            expect(notificationCloseSpy).toBeCalled();
+        });
     });
 });

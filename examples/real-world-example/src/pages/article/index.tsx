@@ -254,7 +254,7 @@ export const ArticlePage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="container page">
+                    <div className="page container">
                         <div className="row article-content">
                             <div className="col-md-12">
                                 <p>{article?.data.body}</p>
@@ -397,7 +397,10 @@ export const ArticlePage: React.FC = () => {
                                         </div>
                                         <div className="card-footer">
                                             <img
-                                                src={user?.image}
+                                                src={
+                                                    user?.image ??
+                                                    "https://api.realworld.io/images/smiley-cyrus.jpeg"
+                                                }
                                                 className="comment-author-img"
                                             />
                                             <button className="btn btn-sm btn-primary">

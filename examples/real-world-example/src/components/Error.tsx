@@ -1,5 +1,7 @@
+import { FieldErrors } from "@pankod/refine-react-hook-form";
+
 type ErrorProps = {
-    errors: {}[];
+    errors: FieldErrors<Record<string, string>>;
 };
 
 export const ErrorList: React.FC<ErrorProps> = ({ errors }) => {
@@ -9,8 +11,9 @@ export const ErrorList: React.FC<ErrorProps> = ({ errors }) => {
                 if (key === "ref") return null;
                 return (
                     <li key={key}>
-                        {console.log("here is key!")}
-                        {key} {errors[key as any]}
+                        <>
+                            {key} {errors[key as any]}
+                        </>
                     </li>
                 );
             })}

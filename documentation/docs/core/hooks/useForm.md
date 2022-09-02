@@ -8,12 +8,10 @@ title: useForm
 :::info
 If you're looking for a complete form library, Refine supports two form libraries out-of-the-box.
 
-- [React Hook Form](https://react-hook-form.com/) (for Headless users) - [Documentation](/packages/react-hook-form.md) - [Example](/examples/react-hook-form/react-hook-form.md)
-- [Ant Design Form](https://ant.design/components/form/#header) (for Ant Design users) - [Documentation](/ui-frameworks/antd/hooks/form/useForm.md) - [Example](/examples/form/useForm.md)
+-   [React Hook Form](https://react-hook-form.com/) (for Headless users) - [Documentation](/packages/react-hook-form/useForm.md) - [Example](/examples/form/react-hook-form/useForm.md)
+-   [Ant Design Form](https://ant.design/components/form/#header) (for Ant Design users) - [Documentation](/ui-frameworks/antd/hooks/form/useForm.md) - [Example](/examples/form/antd/useForm.md)
 :::
 
--   Returns the `mutationResult` after called the `onFinish` callback.
--   Accepts generic type parameters. It is used to define response type of the mutation and query.
 
 ## Basic Usage
 
@@ -42,7 +40,8 @@ export const PostCreate = () => {
     );
 };
 ```
-
+-   Returns the `mutationResult` after called the `onFinish` callback.
+-   Accepts generic type parameters. It is used to define response type of the mutation and query.
 ## Actions
 
 `useForm` can handle edit, create and clone actions.
@@ -76,7 +75,6 @@ It fetches the record data according to the `id` and returns the `queryResult` f
 `useForm` uses [`useUpdate`](/core/hooks/data/useUpdate.md) under the hood for mutations on clone mode.
 
 ## API Reference
-
 
 ### Properties
 
@@ -112,15 +110,15 @@ It fetches the record data according to the `id` and returns the `queryResult` f
 
 ### Return values
 
-| Property       | Description                                            | Type                                                                             |
-| -------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| onFinish       | Triggers the mutation                                  | `(values: TVariables) => Promise<void>`                                          |
-| queryResult    | Result of the query of a record                        | [`QueryObserverResult<T>`](https://react-query.tanstack.com/reference/useQuery)  |
-| mutationResult | Result of the mutation triggered by calling `onFinish` | [`UseMutationResult<T>`](https://react-query.tanstack.com/reference/useMutation) |
-| formLoading    | Loading state of form request                          | `boolean`                                                                        |
-| id             | Record id for `clone` and `create` action              | [`BaseKey`](/core/interfaces.md#basekey)                                         |
-| setId          | `id` setter                                            | `Dispatch<SetStateAction<` `string` \| `number` \| `undefined>>`                 |
-| redirect       | Redirect function for custom redirections              | `(redirect: "list"` \| `"edit"` \| `"show"` \| `"create"` \| `false) => void`    |
+| Property       | Description                                            | Type                                                                                                                                             |
+| -------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| onFinish       | Triggers the mutation                                  | `(values: TVariables) => Promise<CreateResponse<TData>` \| `UpdateResponse<TData>` \| `void`>                                                    |
+| queryResult    | Result of the query of a record                        | [`QueryObserverResult<T>`](https://react-query.tanstack.com/reference/useQuery)                                                                  |
+| mutationResult | Result of the mutation triggered by calling `onFinish` | [`UseMutationResult<T>`](https://react-query.tanstack.com/reference/useMutation)                                                                 |
+| formLoading    | Loading state of form request                          | `boolean`                                                                                                                                        |
+| id             | Record id for `clone` and `create` action              | [`BaseKey`](/core/interfaces.md#basekey)                                                                                                         |
+| setId          | `id` setter                                            | `Dispatch<SetStateAction<` `string` \| `number` \| `undefined>>`                                                                                 |
+| redirect       | Redirect function for custom redirections              | (redirect: `"list"`\|`"edit"`\|`"show"`\|`"create"`\| `false` ,idFromFunction?: [`BaseKey`](/core/interfaces.md#basekey)\|`undefined`) => `data` |
 
 [baserecord]: //core/interfaces.md#baserecord
 [httperror]: //core/interfaces.md#httperror

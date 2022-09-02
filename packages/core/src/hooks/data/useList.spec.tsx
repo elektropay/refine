@@ -1,32 +1,28 @@
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook, waitFor } from "@testing-library/react";
 
 import { MockJSONServer, TestWrapper } from "@test";
 
 import { useList } from "./useList";
+import { defaultRefineOptions } from "@contexts/refine";
 import { IRefineContextProvider } from "../../interfaces";
 
 const mockRefineProvider: IRefineContextProvider = {
     hasDashboard: false,
-    mutationMode: "pessimistic",
-    warnWhenUnsavedChanges: false,
-    syncWithLocation: false,
-    undoableTimeout: 500,
+    ...defaultRefineOptions,
+    options: defaultRefineOptions,
 };
 
 describe("useList Hook", () => {
     it("with rest json server", async () => {
-        const { result, waitFor } = renderHook(
-            () => useList({ resource: "posts" }),
-            {
-                wrapper: TestWrapper({
-                    dataProvider: MockJSONServer,
-                    resources: [{ name: "posts" }],
-                }),
-            },
-        );
+        const { result } = renderHook(() => useList({ resource: "posts" }), {
+            wrapper: TestWrapper({
+                dataProvider: MockJSONServer,
+                resources: [{ name: "posts" }],
+            }),
+        });
 
         await waitFor(() => {
-            return result.current.isSuccess;
+            expect(result.current.isSuccess).toBeTruthy();
         });
 
         const { data } = result.current;
@@ -39,7 +35,7 @@ describe("useList Hook", () => {
         it("useSubscription", async () => {
             const onSubscribeMock = jest.fn();
 
-            renderHook(
+            const { result } = renderHook(
                 () =>
                     useList({
                         resource: "posts",
@@ -60,11 +56,23 @@ describe("useList Hook", () => {
                 },
             );
 
+            await waitFor(() => {
+                expect(result.current.isSuccess).toBeTruthy();
+            });
+
             expect(onSubscribeMock).toBeCalled();
             expect(onSubscribeMock).toHaveBeenCalledWith({
                 channel: "resources/posts",
                 callback: expect.any(Function),
-                params: undefined,
+                params: {
+                    filters: undefined,
+                    hasPagination: undefined,
+                    metaData: undefined,
+                    pagination: undefined,
+                    resource: "posts",
+                    sort: undefined,
+                    subscriptionType: "useList",
+                },
                 types: ["*"],
             });
         });
@@ -72,7 +80,7 @@ describe("useList Hook", () => {
         it("liveMode = Off useSubscription", async () => {
             const onSubscribeMock = jest.fn();
 
-            renderHook(
+            const { result } = renderHook(
                 () =>
                     useList({
                         resource: "posts",
@@ -93,25 +101,36 @@ describe("useList Hook", () => {
                 },
             );
 
+            await waitFor(() => {
+                expect(result.current.isSuccess).toBeTruthy();
+            });
+
             expect(onSubscribeMock).not.toBeCalled();
         });
 
         it("liveMode = Off and liveMode hook param auto", async () => {
             const onSubscribeMock = jest.fn();
 
-            renderHook(() => useList({ resource: "posts", liveMode: "auto" }), {
-                wrapper: TestWrapper({
-                    dataProvider: MockJSONServer,
-                    resources: [{ name: "posts" }],
-                    liveProvider: {
-                        unsubscribe: jest.fn(),
-                        subscribe: onSubscribeMock,
-                    },
-                    refineProvider: {
-                        ...mockRefineProvider,
-                        liveMode: "off",
-                    },
-                }),
+            const { result } = renderHook(
+                () => useList({ resource: "posts", liveMode: "auto" }),
+                {
+                    wrapper: TestWrapper({
+                        dataProvider: MockJSONServer,
+                        resources: [{ name: "posts" }],
+                        liveProvider: {
+                            unsubscribe: jest.fn(),
+                            subscribe: onSubscribeMock,
+                        },
+                        refineProvider: {
+                            ...mockRefineProvider,
+                            liveMode: "off",
+                        },
+                    }),
+                },
+            );
+
+            await waitFor(() => {
+                expect(result.current.isSuccess).toBeTruthy();
             });
 
             expect(onSubscribeMock).toBeCalled();
@@ -121,7 +140,7 @@ describe("useList Hook", () => {
             const onSubscribeMock = jest.fn(() => true);
             const onUnsubscribeMock = jest.fn();
 
-            const { unmount } = renderHook(
+            const { result, unmount } = renderHook(
                 () =>
                     useList({
                         resource: "posts",
@@ -141,6 +160,10 @@ describe("useList Hook", () => {
                     }),
                 },
             );
+
+            await waitFor(() => {
+                expect(result.current.isSuccess).toBeTruthy();
+            });
 
             expect(onSubscribeMock).toBeCalled();
 

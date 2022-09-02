@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook, waitFor } from "@testing-library/react";
 
 import { MockJSONServer, TestWrapper } from "@test";
 
@@ -6,7 +6,7 @@ import { usePermissions } from "./";
 
 describe("usePermissions Hook", () => {
     it("returns authenticated userPermissions", async () => {
-        const { result, waitFor } = renderHook(() => usePermissions(), {
+        const { result } = renderHook(() => usePermissions(), {
             wrapper: TestWrapper({
                 authProvider: {
                     login: () => Promise.resolve(),
@@ -22,14 +22,18 @@ describe("usePermissions Hook", () => {
         });
 
         await waitFor(() => {
-            return result.current.isSuccess;
+            expect(result.current.isSuccess).toBeTruthy();
         });
 
         expect(result.current.data).toEqual(["admin"]);
     });
 
     it("returns error for not authenticated", async () => {
-        const { result, waitFor } = renderHook(() => usePermissions(), {
+        jest.spyOn(console, "error").mockImplementation((message) => {
+            if (!message.includes("Not Authenticated")) console.warn(message);
+        });
+
+        const { result } = renderHook(() => usePermissions(), {
             wrapper: TestWrapper({
                 authProvider: {
                     login: () => Promise.resolve(),
@@ -43,7 +47,7 @@ describe("usePermissions Hook", () => {
         });
 
         await waitFor(() => {
-            return result.current.isError;
+            expect(result.current.isError).toBeTruthy();
         });
 
         expect(result.current.error).toEqual("Not Authenticated");

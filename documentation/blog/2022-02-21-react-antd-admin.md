@@ -27,7 +27,7 @@ import table_i18n from '@site/static/img/blog/2022-02-21-react-antd-admin/table-
 
 📦 Out-of-the-box : Routing, networking, authentication, state management, i18n and UI.
 
-🔌 Backend Agnostic : Connects to any custom backend. Built-in support for REST API, GraphQL, NestJs CRUD, Airtable, Strapi, Strapi v4, Strapi GraphQL, Supabase, Hasura, Nhost, Appwrite, Firebase and Altogic.
+🔌 Backend Agnostic : Connects to any custom backend. Built-in support for REST API, GraphQL, NestJs CRUD, Airtable, Strapi, Strapi v4, Strapi GraphQL, Supabase, Hasura, Nhost, Medusa, Appwrite, Firebase and Altogic.
 
 📝 Native Typescript Core : You can always opt out for plain JavaScript.
 
@@ -56,22 +56,26 @@ npx superplate-cli -p refine-react refine-advanced-tutorial
 ```bash
 ✔ What will be the name of your app › refine-advanced-tutorial
 
-✔ Package manager: · npm
+✔ Package manager: · Npm
 
-✔ Do you want to use an UI Framework?: · antd
+✔ Do you want to use a UI Framework?: · Ant Design
 
-✔ Do you want to customize theme?: · css
+✔ Do you want a customized layout?: · Default theme
 
-✔ Data Provider: · custom-json-rest-data-provider
+✔ Router Provider: · React Router v6
 
-✔ Auth Provider: · none
+✔ Data Provider: · REST API
 
-✔ Do you want to add an example page? · example-resource
+✔ Auth Provider: · None
 
-✔ Do you want to customize layout? · no
+✔ Do you want to add example pages? · Yes (Recommended)
+
+✔ Do you want a customized layout? · No
+
+✔ i18n - Internationalization: · No
 ```
 
-`✔ Do you want to add an example page? ·example-resource` By selecting you can view the tutorial in your local.
+`✔ Do you want to add example pages? ·Yes (Recommended)` By selecting you can view the tutorial in your local.
 
 ```bash
 cd refine-advanced-tutorial
@@ -122,18 +126,19 @@ Let's import the `i18n` instance we created in index.tsx. Then let's wrap the Ap
 
 ```tsx title="src/index.tsx"
 import React from "react";
-import ReactDOM from "react-dom";
-import App from "./App";
+import { createRoot } from "react-dom/client";
 
+import App from "./App";
 import "./i18n";
 
-ReactDOM.render(
+const container = document.getElementById("root");
+const root = createRoot(container!);
+root.render(
     <React.StrictMode>
         <React.Suspense fallback="loading">
             <App />
         </React.Suspense>
     </React.StrictMode>,
-    document.getElementById("root"),
 );
 ```
 
@@ -503,7 +508,7 @@ function App() {
             Header={Header}
             //highlight-start
             liveProvider={liveProvider(ablyClient)}
-            liveMode="auto"
+            options={{ liveMode: "auto" }}
             //highlight-end
             resources={[
                 {
@@ -661,7 +666,7 @@ const cerbos = new Cerbos({
     dataProvider={dataProvider("https://api.fake-rest.refine.dev")}
     Header={() => <Header role={role} />}
     liveProvider={liveProvider(ablyClient)}
-    liveMode="auto"
+    options={{ liveMode: "auto" }}
     //highlight-start
     accessControlProvider={{
         can: async ({ action, params, resource }) => {

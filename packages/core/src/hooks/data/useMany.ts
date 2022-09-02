@@ -1,4 +1,8 @@
-import { QueryObserverResult, useQuery, UseQueryOptions } from "react-query";
+import {
+    QueryObserverResult,
+    useQuery,
+    UseQueryOptions,
+} from "@tanstack/react-query";
 
 import {
     BaseRecord,
@@ -7,7 +11,7 @@ import {
     HttpError,
     MetaDataQuery,
     LiveModeProps,
-    OpenNotificationParams,
+    SuccessErrorNotification,
 } from "../../interfaces";
 import {
     useTranslate,
@@ -22,11 +26,10 @@ export type UseManyProps<TData, TError> = {
     resource: string;
     ids: BaseKey[];
     queryOptions?: UseQueryOptions<GetManyResponse<TData>, TError>;
-    successNotification?: OpenNotificationParams | false;
-    errorNotification?: OpenNotificationParams | false;
     metaData?: MetaDataQuery;
     dataProviderName?: string;
-} & LiveModeProps;
+} & SuccessErrorNotification &
+    LiveModeProps;
 
 /**
  * `useMany` is a modified version of `react-query`'s {@link https://react-query.tanstack.com/guides/queries `useQuery`} used for retrieving multiple items from a `resource`.
@@ -71,7 +74,12 @@ export const useMany = <
     useResourceSubscription({
         resource,
         types: ["*"],
-        params: { ids: ids ?? [], ...liveParams },
+        params: {
+            ids: ids ?? [],
+            metaData,
+            subscriptionType: "useMany",
+            ...liveParams,
+        },
         channel: `resources/${resource}`,
         enabled: isEnabled,
         liveMode,
@@ -80,18 +88,41 @@ export const useMany = <
 
     const queryResponse = useQuery<GetManyResponse<TData>, TError>(
         queryKey.many(ids),
-        () => getMany<TData>({ resource, ids, metaData }),
+        ({ queryKey, pageParam, signal }) =>
+            getMany<TData>({
+                resource,
+                ids,
+                metaData: {
+                    ...metaData,
+                    queryContext: {
+                        queryKey,
+                        pageParam,
+                        signal,
+                    },
+                },
+            }),
         {
             ...queryOptions,
             onSuccess: (data) => {
                 queryOptions?.onSuccess?.(data);
-                handleNotification(successNotification);
+
+                const notificationConfig =
+                    typeof successNotification === "function"
+                        ? successNotification(data, ids, resource)
+                        : successNotification;
+
+                handleNotification(notificationConfig);
             },
             onError: (err: TError) => {
                 checkError(err);
                 queryOptions?.onError?.(err);
 
-                handleNotification(errorNotification, {
+                const notificationConfig =
+                    typeof errorNotification === "function"
+                        ? errorNotification(err, ids, resource)
+                        : errorNotification;
+
+                handleNotification(notificationConfig, {
                     key: `${ids[0]}-${resource}-getMany-notification`,
                     message: translate(
                         "notifications.error",

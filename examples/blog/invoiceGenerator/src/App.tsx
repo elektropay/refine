@@ -68,6 +68,7 @@ function App() {
                     icon: <FileAddOutlined />,
                 },
             ]}
+            options={{ disableTelemetry: true }}
         />
     );
 }

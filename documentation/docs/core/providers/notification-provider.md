@@ -264,7 +264,7 @@ import { useNotification } from "@pankod/refine-core";
 
 const { open } = useNotification();
 
-open({
+open?.({
     message: "Hey",
     description: "I <3 Refine",
     key: "unique-id",
@@ -294,16 +294,14 @@ import { useNotification } from "@pankod/refine-core";
 
 const { close } = useNotification();
 
-close("displayed-notification-key");
+close?.("displayed-notification-key");
 ```
 
 :::
 
-## Live Codesandbox Example
+## Live StackBlitz Example
 
-<iframe src="https://codesandbox.io/embed/refine-react-toastify-example-ynsf7?autoresize=1&fontsize=14&module=%2Fsrc%2Fproviders%2FnotificationProvider.tsx&theme=dark&view=preview"
+<iframe loading="lazy" src="https://stackblitz.com//github/pankod/refine/tree/master/examples/reactToastify?embed=1&view=preview&theme=dark&preset=node"
     style={{width: "100%", height:"80vh", border: "0px", borderRadius: "8px", overflow:"hidden"}}
     title="refine-react-toastify-example"
-    allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
-    sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
 ></iframe>

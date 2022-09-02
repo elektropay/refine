@@ -1,85 +1,68 @@
-import React, { useEffect, useState } from "react";
-import { useQueryClient } from "react-query";
+import React from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useNavigation } from "@hooks";
 import { IAuthContext } from "../../interfaces";
 
-const defaultProvider: IAuthContext = {
-    login: () => Promise.resolve(),
-    logout: () => Promise.resolve(),
-    checkAuth: () => Promise.resolve(),
-    checkError: () => Promise.resolve(),
-    getPermissions: () => Promise.resolve(),
-    getUserIdentity: () => Promise.resolve(),
-};
-export const AuthContext = React.createContext<IAuthContext>(defaultProvider);
+export const AuthContext = React.createContext<IAuthContext>({});
 
-export const AuthContextProvider: React.FC<Partial<IAuthContext>> = ({
-    login = defaultProvider.login,
-    logout = defaultProvider.logout,
-    checkAuth = defaultProvider.checkAuth,
-    checkError = defaultProvider.checkError,
-    getPermissions = defaultProvider.getPermissions,
-    getUserIdentity = defaultProvider.getUserIdentity,
-    isProvided,
-    children,
-}) => {
+export const AuthContextProvider: React.FC<
+    IAuthContext & {
+        children?: React.ReactNode;
+    }
+> = ({ children, isProvided, ...authOperations }) => {
     const { replace } = useNavigation();
-    const [isAuthenticated, setAuthenticated] = useState(false);
     const queryClient = useQueryClient();
 
-    useEffect(() => {
+    const invalidateAuthStore = () => {
         queryClient.invalidateQueries(["useAuthenticated"]);
         queryClient.invalidateQueries(["getUserIdentity"]);
         queryClient.invalidateQueries(["usePermissions"]);
-    }, [isAuthenticated]);
+    };
 
     const loginFunc = async (params: any) => {
         try {
-            const result = await login(params);
-            setAuthenticated(true);
+            const result = await authOperations.login?.(params);
+
+            invalidateAuthStore();
             return Promise.resolve(result);
         } catch (error) {
-            setAuthenticated(false);
-            throw error;
+            return Promise.reject(error);
         }
     };
 
     const logoutFunc = async (params: any) => {
         try {
-            const redirectPath = await logout(params);
-            setAuthenticated(false);
+            const redirectPath = await authOperations.logout?.(params);
+
+            invalidateAuthStore();
 
             return Promise.resolve(redirectPath);
         } catch (error) {
-            setAuthenticated(true);
-            throw error;
+            return Promise.reject(error);
         }
     };
 
     const checkAuthFunc = async (params: any) => {
         try {
-            await checkAuth(params);
-            setAuthenticated(true);
+            await authOperations.checkAuth?.(params);
+            return Promise.resolve();
         } catch (error) {
             if ((error as { redirectPath?: string })?.redirectPath) {
                 replace((error as { redirectPath: string }).redirectPath);
             }
-            setAuthenticated(false);
-            throw error;
+
+            return Promise.reject(error);
         }
     };
 
     return (
         <AuthContext.Provider
             value={{
+                ...authOperations,
                 login: loginFunc,
                 logout: logoutFunc,
                 checkAuth: checkAuthFunc,
-                checkError,
-                getPermissions,
-                getUserIdentity,
-                isAuthenticated,
                 isProvided,
             }}
         >

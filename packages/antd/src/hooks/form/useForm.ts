@@ -9,6 +9,8 @@ import {
     UseFormReturnType as UseFormReturnTypeCore,
     useWarnAboutChange,
     UseFormProps as UseFormPropsCore,
+    CreateResponse,
+    UpdateResponse,
 } from "@pankod/refine-core";
 
 import { ButtonProps } from "../../components/antd";
@@ -32,7 +34,9 @@ export type UseFormReturnType<
     saveButtonProps: ButtonProps & {
         onClick: () => void;
     };
-    onFinish: (values?: TVariables) => Promise<void>;
+    onFinish: (
+        values?: TVariables,
+    ) => Promise<CreateResponse<TData> | UpdateResponse<TData> | void>;
 };
 
 /**
@@ -140,7 +144,8 @@ export const useForm = <
         form: formSF.form,
         formProps: {
             ...formSF.formProps,
-            onFinish,
+            onFinish: (values: TVariables) =>
+                onFinish?.(values).catch((error) => error),
             onKeyUp,
             onValuesChange,
             initialValues: queryResult?.data?.data,

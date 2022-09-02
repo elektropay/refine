@@ -1,12 +1,11 @@
 /* eslint-disable react/display-name */
 import React from "react";
-import { RouteProps, Route, Routes, Navigate, Outlet } from "react-router-dom";
+import { Route, Routes, Navigate, Outlet } from "react-router-dom";
 import {
     LoginPage as DefaultLoginPage,
     ErrorComponent,
     LayoutWrapper,
     useAuthenticated,
-    useIsAuthenticated,
     useResource,
     useRefineContext,
     useRouterContext,
@@ -51,15 +50,22 @@ const ResourceComponent: React.FC<{ route: string }> = ({ route }) => {
                             resource={name}
                             action="list"
                             fallback={catchAll ?? <ErrorComponent />}
+                            params={{
+                                resource,
+                            }}
                         >
-                            <List
-                                name={name}
-                                canCreate={canCreate}
-                                canEdit={canEdit}
-                                canDelete={canDelete}
-                                canShow={canShow}
-                                options={options}
-                            />
+                            {!list ? (
+                                catchAll ?? <ErrorComponent />
+                            ) : (
+                                <List
+                                    name={name}
+                                    canCreate={canCreate}
+                                    canEdit={canEdit}
+                                    canDelete={canDelete}
+                                    canShow={canShow}
+                                    options={options}
+                                />
+                            )}
                         </CanAccess>
                     );
                 case "create":
@@ -71,16 +77,21 @@ const ResourceComponent: React.FC<{ route: string }> = ({ route }) => {
                             fallback={catchAll ?? <ErrorComponent />}
                             params={{
                                 id: id ? decodeURIComponent(id) : undefined,
+                                resource,
                             }}
                         >
-                            <Create
-                                name={name}
-                                canCreate={canCreate}
-                                canEdit={canEdit}
-                                canDelete={canDelete}
-                                canShow={canShow}
-                                options={options}
-                            />
+                            {!create ? (
+                                catchAll ?? <ErrorComponent />
+                            ) : (
+                                <Create
+                                    name={name}
+                                    canCreate={canCreate}
+                                    canEdit={canEdit}
+                                    canDelete={canDelete}
+                                    canShow={canShow}
+                                    options={options}
+                                />
+                            )}
                         </CanAccess>
                     );
 
@@ -91,17 +102,22 @@ const ResourceComponent: React.FC<{ route: string }> = ({ route }) => {
                             action="edit"
                             params={{
                                 id: id ? decodeURIComponent(id) : undefined,
+                                resource,
                             }}
                             fallback={catchAll ?? <ErrorComponent />}
                         >
-                            <Edit
-                                name={name}
-                                canCreate={canCreate}
-                                canEdit={canEdit}
-                                canDelete={canDelete}
-                                canShow={canShow}
-                                options={options}
-                            />
+                            {!edit ? (
+                                catchAll ?? <ErrorComponent />
+                            ) : (
+                                <Edit
+                                    name={name}
+                                    canCreate={canCreate}
+                                    canEdit={canEdit}
+                                    canDelete={canDelete}
+                                    canShow={canShow}
+                                    options={options}
+                                />
+                            )}
                         </CanAccess>
                     );
 
@@ -112,17 +128,22 @@ const ResourceComponent: React.FC<{ route: string }> = ({ route }) => {
                             action="show"
                             params={{
                                 id: id ? decodeURIComponent(id) : undefined,
+                                resource,
                             }}
                             fallback={catchAll ?? <ErrorComponent />}
                         >
-                            <Show
-                                name={name}
-                                canCreate={canCreate}
-                                canEdit={canEdit}
-                                canDelete={canDelete}
-                                canShow={canShow}
-                                options={options}
-                            />
+                            {!show ? (
+                                catchAll ?? <ErrorComponent />
+                            ) : (
+                                <Show
+                                    name={name}
+                                    canCreate={canCreate}
+                                    canEdit={canEdit}
+                                    canDelete={canDelete}
+                                    canShow={canShow}
+                                    options={options}
+                                />
+                            )}
                         </CanAccess>
                     );
                 default:
@@ -140,20 +161,20 @@ export const RouteProvider = () => {
     const { resources } = useResource();
     const { catchAll, DashboardPage, LoginPage } = useRefineContext();
 
-    const { routes: customRoutes }: { routes: RouteProps[] } =
-        useRouterContext();
+    const { routes: customRoutes } = useRouterContext();
 
-    const isAuthenticated = useIsAuthenticated();
-    const { isLoading } = useAuthenticated({ type: "routeProvider" });
+    const { isFetching, isError } = useAuthenticated({
+        type: "routeProvider",
+    });
 
-    if (isLoading) {
+    if (isFetching) {
         return (
             <Routes>
                 <Route path="*" element={null} />
             </Routes>
         );
     }
-
+    const isAuthenticated = isError ? false : true;
     const CustomPathAfterLogin: React.FC = (): JSX.Element | null => {
         const { pathname, search } = location;
         const toURL = `${pathname}${search}`;
@@ -239,19 +260,18 @@ export const RouteProvider = () => {
         </Routes>
     );
 
+    const renderLoginRouteElement = (): JSX.Element => {
+        if (LoginPage) return <LoginPage />;
+        return <DefaultLoginPage />;
+    };
+
     const renderUnauthorized = () => (
         <Routes>
             {[...(customRoutes || [])].map((route, i) => (
                 <Route key={`custom-route-${i}`} {...route} />
             ))}
-            <Route
-                path="/"
-                element={LoginPage ? <LoginPage /> : <DefaultLoginPage />}
-            />
-            <Route
-                path="/login"
-                element={LoginPage ? <LoginPage /> : <DefaultLoginPage />}
-            />
+            <Route path="/" element={renderLoginRouteElement()} />
+            <Route path="/login" element={renderLoginRouteElement()} />
             <Route path="*" element={<CustomPathAfterLogin />} />
         </Routes>
     );

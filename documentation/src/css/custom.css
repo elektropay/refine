@@ -103,6 +103,41 @@
     margin-left: 5px;
 }
 
+.deprecated {
+    font-size: 13px;
+    border-radius: 3px;
+    border-style: solid;
+    border-color: orange;
+    color: orange;
+    border-width: 1px;
+    letter-spacing: 0.02rem;
+    margin-right: 0;
+    padding: 2px 6px;
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.deprecated--block {
+    font-size: 13px;
+    border-radius: 3px;
+    border-style: solid;
+    border-color: orange;
+    color: orange;
+    border-width: 1px;
+    letter-spacing: 0.02rem;
+    margin-right: 0;
+    padding: 2px 6px;
+    display: inline-block;
+    margin: 0 0 10px 0;
+    word-break: keep-all;
+}
+
+.deprecated::before, .deprecated--block::before {
+    content: "⚠️ deprecated";
+    color: orange;
+    margin-right: 4px;
+}
+
 .required-block {
     display: flex;
     align-items: center;
@@ -267,20 +302,53 @@
     border: none !important;
 }
 
-
 .tutorial-cards {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
 }
 
+.tutorial-cards > a {
+    width: 100%;
+}
+
+.tutorial-cards-center {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+}
+  
+.tutorial-cards-center > a {
+      width: 50%;
+}
 
 @media (max-width: 425px) {
     .tutorial-cards {
-        display: grid;
-        grid-template-columns: repeat(1, 1fr);
-        gap: 16px;
-        margin-top: 24px;
+       flex-direction: column;
+    }        
+    .tutorial-cards-center > a {
+        width: 100%;
     }
-  }
+} 
+
+/* Antd Sider Issue Fix */
+.ant-layout-sider-trigger {
+    position: sticky !important;
+}
+
+.markdown .live-editor-wrapper li + li {
+    margin-top: 0;
+}
+
+.live-editor-wrapper table th, .live-editor-wrapper table td {
+    border: none;
+}
+
+.live-editor-wrapper table tr:nth-child(2n) {
+    background: none;
+}
+
+.code-block-hidden,
+.code-block-hidden.theme-code-block-highlighted-line {
+    display: none;
+}

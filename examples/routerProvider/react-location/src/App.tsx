@@ -17,8 +17,11 @@ const App: React.FC = () => {
         <Refine
             routerProvider={routerProvider}
             dataProvider={dataProvider(API_URL)}
-            syncWithLocation
-            warnWhenUnsavedChanges
+            options={{
+                syncWithLocation: true,
+                warnWhenUnsavedChanges: true,
+                disableTelemetry: true,
+            }}
             resources={[
                 {
                     name: "posts",

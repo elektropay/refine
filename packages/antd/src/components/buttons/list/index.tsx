@@ -9,16 +9,20 @@ import {
     useResource,
     useRouterContext,
 } from "@pankod/refine-core";
+import {
+    RefineListButtonProps,
+    RefineButtonTestIds,
+} from "@pankod/refine-ui-types";
 
-export type ListButtonProps = ButtonProps & {
-    /**
-     * @deprecated resourceName deprecated. Use resourceNameOrRouteName instead # https://github.com/pankod/refine/issues/1618
-     */
-    resourceName?: string;
-    resourceNameOrRouteName?: string;
-    hideText?: boolean;
-    ignoreAccessControlProvider?: boolean;
-};
+export type ListButtonProps = RefineListButtonProps<
+    ButtonProps,
+    {
+        /**
+         * @deprecated resourceName deprecated. Use resourceNameOrRouteName instead # https://github.com/pankod/refine/issues/1618
+         */
+        resourceName?: string;
+    }
+>;
 
 /**
  * `<ListButton>` is using Ant Design's {@link https://ant.design/components/button/ `<Button>`} component.
@@ -36,7 +40,7 @@ export const ListButton: React.FC<ListButtonProps> = ({
     onClick,
     ...rest
 }) => {
-    const { listUrl } = useNavigation();
+    const { listUrl: generateListUrl } = useNavigation();
     const { Link } = useRouterContext();
     const translate = useTranslate();
 
@@ -51,6 +55,9 @@ export const ListButton: React.FC<ListButtonProps> = ({
         queryOptions: {
             enabled: !ignoreAccessControlProvider,
         },
+        params: {
+            resource,
+        },
     });
 
     const createButtonDisabledTitle = () => {
@@ -63,9 +70,11 @@ export const ListButton: React.FC<ListButtonProps> = ({
             );
     };
 
+    const listUrl = generateListUrl(propResourceName ?? resource.route!);
+
     return (
         <Link
-            to={listUrl(propResourceName ?? resource.route!)}
+            to={listUrl}
             replace={false}
             onClick={(e: React.MouseEvent<HTMLElement, MouseEvent>) => {
                 if (onClick) {
@@ -78,6 +87,7 @@ export const ListButton: React.FC<ListButtonProps> = ({
                 icon={<BarsOutlined />}
                 disabled={data?.can === false}
                 title={createButtonDisabledTitle()}
+                data-testid={RefineButtonTestIds.ListButton}
                 {...rest}
             >
                 {!hideText &&

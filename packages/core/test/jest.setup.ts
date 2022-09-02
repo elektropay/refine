@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 import "@testing-library/jest-dom/extend-expect";
-// import { createMockServer } from "./dataMocks";
+import * as util from "util";
 
 /** Antd mocks */
 window.matchMedia = jest.fn().mockImplementation((query) => {
@@ -16,9 +16,13 @@ window.matchMedia = jest.fn().mockImplementation((query) => {
 window.scroll = jest.fn();
 window.alert = jest.fn();
 
-/** mock service worker setup */
-// const server = createMockServer();
+Object.defineProperty(window, "TextEncoder", {
+    writable: true,
+    value: util.TextEncoder,
+});
+Object.defineProperty(window, "TextDecoder", {
+    writable: true,
+    value: util.TextDecoder,
+});
 
-// beforeAll(() => server.listen());
-// afterEach(() => server.resetHandlers());
-// afterAll(() => server.close());
+jest.setTimeout(20000);

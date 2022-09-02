@@ -223,7 +223,7 @@ A React-based framework for building internal tools, rapidly. **refine** offers 
 
 📦 Out-of-the-box : Routing, networking, authentication, state management, i18n and UI.
 
-🔌 Backend Agnostic : Connects to any custom backend. Built-in support for REST API, Strapi, NestJs CRUD, Hasura, Nhost, Airtable, Supabase, Appwrite and Altogic.
+🔌 Backend Agnostic : Connects to any custom backend. Built-in support for REST API, Strapi, NestJs CRUD, Hasura, Nhost, Airtable, Medusa, Supabase, Appwrite and Altogic.
 
 📝 Native Typescript Core : You can always opt-out for plain JavaScript.
 
@@ -239,7 +239,7 @@ The CSV import with **refine** is very simple and out-of-the-box feature. How to
 
 [Refer to the **refine** CSV import guide for more information. →](https://refine.dev/docs/guides-and-concepts/import-export/csv-import/)
 
-[View Source](https://github.com/pankod/refine/blob/master/examples/importExport/src/pages/posts/list.tsx#L32)
+[View Source](https://github.com/pankod/refine/blob/master/examples/importExport/antd/src/pages/posts/list.tsx#L32)
 
 ## Refine CSV Import Usage
 

@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook, waitFor } from "@testing-library/react";
 
 import { MockJSONServer, TestWrapper } from "@test";
 
@@ -20,7 +20,7 @@ const customPagination = {
 
 describe("useSimpleList Hook", () => {
     it("default", async () => {
-        const { result, waitFor } = renderHook(() => useSimpleList(), {
+        const { result } = renderHook(() => useSimpleList(), {
             wrapper: TestWrapper({
                 dataProvider: MockJSONServer,
                 resources: [{ name: "posts" }],
@@ -28,7 +28,7 @@ describe("useSimpleList Hook", () => {
         });
 
         await waitFor(() => {
-            return !result.current.listProps.loading;
+            expect(!result.current.listProps.loading).toBeTruthy();
         });
 
         const {
@@ -39,11 +39,13 @@ describe("useSimpleList Hook", () => {
         expect(pagination).toEqual({
             ...defaultPagination,
             onChange: (pagination as any).onChange,
+            itemRender: (pagination as any).itemRender,
+            simple: true,
         });
     });
 
     it("with initial pagination parameters", async () => {
-        const { result, waitFor } = renderHook(
+        const { result } = renderHook(
             () =>
                 useSimpleList({
                     pagination: customPagination,
@@ -57,7 +59,7 @@ describe("useSimpleList Hook", () => {
         );
 
         await waitFor(() => {
-            return !result.current.listProps.loading;
+            expect(!result.current.listProps.loading).toBeTruthy();
         });
 
         const {
@@ -67,11 +69,35 @@ describe("useSimpleList Hook", () => {
         expect(pagination).toEqual({
             ...customPagination,
             onChange: (pagination as any).onChange,
+            itemRender: (pagination as any).itemRender,
+            simple: true,
         });
     });
 
+    it("with disabled pagination", async () => {
+        const { result } = renderHook(
+            () =>
+                useSimpleList({
+                    hasPagination: false,
+                }),
+            {
+                wrapper: TestWrapper({}),
+            },
+        );
+
+        await waitFor(() => {
+            expect(!result.current.listProps.loading).toBeTruthy();
+        });
+
+        const {
+            listProps: { pagination },
+        } = result.current;
+
+        expect(pagination).toBe(false);
+    });
+
     it("with custom resource", async () => {
-        const { result, waitFor } = renderHook(
+        const { result } = renderHook(
             () =>
                 useSimpleList({
                     resource: "categories",
@@ -85,7 +111,7 @@ describe("useSimpleList Hook", () => {
         );
 
         await waitFor(() => {
-            return !result.current.listProps.loading;
+            expect(!result.current.listProps.loading).toBeTruthy();
         });
 
         const {

@@ -22,6 +22,7 @@ const App: React.FC = () => {
                 },
             ]}
             Layout={Layout}
+            options={{ disableTelemetry: true }}
         />
     );
 };

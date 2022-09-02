@@ -1,5 +1,5 @@
-import React from "react";
-import { QueryClient, QueryClientProvider } from "react-query";
+import React, { ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 
 import { AuthContextProvider } from "@contexts/auth";
@@ -14,6 +14,7 @@ import {
     INotificationContext,
     IDataMultipleContextProvider,
     IDataContextProvider,
+    IAuditLogContext,
 } from "../src/interfaces";
 import { TranslationContextProvider } from "@contexts/translation";
 import { RefineContextProvider } from "@contexts/refine";
@@ -22,14 +23,19 @@ import { RouterContextProvider } from "@contexts/router";
 import { AccessControlContextProvider } from "@contexts/accessControl";
 import { LiveContextProvider } from "@contexts/live";
 import { NotificationContextProvider } from "@contexts/notification";
+import { AuditLogContextProvider } from "@contexts/auditLog";
 
-import {
-    MockRouterProvider,
-    MockAccessControlProvider,
-    MockLiveProvider,
-} from "@test";
+import { MockRouterProvider } from "@test";
 
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
+    logger: {
+        log: console.log,
+        warn: console.warn,
+        // ✅ no more errors on the console
+        error: () => {
+            return {};
+        },
+    },
     defaultOptions: {
         queries: {
             cacheTime: 0,
@@ -38,7 +44,11 @@ const queryClient = new QueryClient({
     },
 });
 
-interface ITestWrapperProps {
+beforeEach(() => {
+    queryClient.clear();
+});
+
+export interface ITestWrapperProps {
     authProvider?: IAuthContext;
     dataProvider?: IDataContextProvider | IDataMultipleContextProvider;
     i18nProvider?: I18nProvider;
@@ -49,9 +59,12 @@ interface ITestWrapperProps {
     children?: React.ReactNode;
     routerInitialEntries?: string[];
     refineProvider?: IRefineContextProvider;
+    auditLogProvider?: IAuditLogContext;
 }
 
-export const TestWrapper: (props: ITestWrapperProps) => React.FC = ({
+export const TestWrapper: (
+    props: ITestWrapperProps,
+) => React.FC<{ children: ReactNode }> = ({
     authProvider,
     dataProvider,
     resources,
@@ -61,6 +74,7 @@ export const TestWrapper: (props: ITestWrapperProps) => React.FC = ({
     routerInitialEntries,
     refineProvider,
     liveProvider,
+    auditLogProvider,
 }) => {
     // eslint-disable-next-line react/display-name
     return ({ children }): React.ReactElement => {
@@ -92,19 +106,23 @@ export const TestWrapper: (props: ITestWrapperProps) => React.FC = ({
                 {withNotificationProvider}
             </AccessControlContextProvider>
         ) : (
-            <AccessControlContextProvider {...MockAccessControlProvider}>
-                {withNotificationProvider}
-            </AccessControlContextProvider>
+            withNotificationProvider
+        );
+
+        const withAuidtLogProvider = auditLogProvider ? (
+            <AuditLogContextProvider {...auditLogProvider}>
+                {withAccessControl}
+            </AuditLogContextProvider>
+        ) : (
+            withAccessControl
         );
 
         const withLive = liveProvider ? (
             <LiveContextProvider liveProvider={liveProvider}>
-                {withAccessControl}
+                {withAuidtLogProvider}
             </LiveContextProvider>
         ) : (
-            <LiveContextProvider liveProvider={MockLiveProvider}>
-                {withAccessControl}
-            </LiveContextProvider>
+            withAuidtLogProvider
         );
 
         const withTranslation = i18nProvider ? (
@@ -122,7 +140,10 @@ export const TestWrapper: (props: ITestWrapperProps) => React.FC = ({
         );
 
         const withAuth = authProvider ? (
-            <AuthContextProvider {...authProvider}>
+            <AuthContextProvider
+                {...authProvider}
+                isProvided={Boolean(authProvider)}
+            >
                 {withNotification}
             </AuthContextProvider>
         ) : (

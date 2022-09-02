@@ -1,5 +1,5 @@
 import { IQueryKeys } from "src/interfaces";
-import { QueryKey } from "react-query";
+import { QueryKey } from "@tanstack/react-query";
 
 import { MetaDataQuery } from "src/interfaces";
 
@@ -30,6 +30,10 @@ export const queryKeys = (
             id?.toString(),
             { ...metaData } as QueryKey,
         ],
+        logList: (meta) =>
+            ["logList", resource, meta as any, metaData as QueryKey].filter(
+                (item) => item !== undefined,
+            ),
     };
     return keys;
 };

@@ -1,4 +1,8 @@
-import { useQueryClient, useMutation, UseMutationResult } from "react-query";
+import {
+    useQueryClient,
+    useMutation,
+    UseMutationResult,
+} from "@tanstack/react-query";
 import pluralize from "pluralize";
 
 import {
@@ -9,6 +13,7 @@ import {
     usePublish,
     useHandleNotification,
     useDataProvider,
+    useLog,
     useInvalidate,
 } from "@hooks";
 import { ActionTypes } from "@contexts/undoableQueue";
@@ -80,6 +85,7 @@ export const useDelete = <
     const { notificationDispatch } = useCancelNotification();
     const translate = useTranslate();
     const publish = usePublish();
+    const { log } = useLog();
     const handleNotification = useHandleNotification();
     const invalidateStore = useInvalidate();
 
@@ -232,7 +238,6 @@ export const useDelete = <
                 },
             ) => {
                 // invalidate the cache for the list and many queries:
-
                 invalidateStore({
                     resource,
                     dataProviderName,
@@ -246,15 +251,26 @@ export const useDelete = <
             },
             onSuccess: (
                 _data,
-                { id, resource, successNotification },
+                {
+                    id,
+                    resource,
+                    successNotification,
+                    dataProviderName,
+                    metaData,
+                },
                 context,
             ) => {
-                const resourceSingular = pluralize.singular(resource);
+                const resourceSingular = pluralize.singular(resource ?? "");
 
                 // Remove the queries from the cache:
-                queryClient.removeQueries(context.queryKey.detail(id));
+                queryClient.removeQueries(context?.queryKey.detail(id));
 
-                handleNotification(successNotification, {
+                const notificationConfig =
+                    typeof successNotification === "function"
+                        ? successNotification(_data, id, resource)
+                        : successNotification;
+
+                handleNotification(notificationConfig, {
                     key: `${id}-${resource}-notification`,
                     description: translate("notifications.success", "Success"),
                     message: translate(
@@ -278,6 +294,22 @@ export const useDelete = <
                     },
                     date: new Date(),
                 });
+
+                const { fields, operation, variables, ...rest } =
+                    metaData || {};
+
+                log?.mutate({
+                    action: "delete",
+                    resource,
+                    meta: {
+                        id,
+                        dataProviderName,
+                        ...rest,
+                    },
+                });
+
+                // Remove the queries from the cache:
+                queryClient.removeQueries(context?.queryKey.detail(id));
             },
             onError: (
                 err: TError,
@@ -294,9 +326,14 @@ export const useDelete = <
                 if (err.message !== "mutationCancelled") {
                     checkError(err);
 
-                    const resourceSingular = pluralize.singular(resource);
+                    const resourceSingular = pluralize.singular(resource ?? "");
 
-                    handleNotification(errorNotification, {
+                    const notificationConfig =
+                        typeof errorNotification === "function"
+                            ? errorNotification(err, id, resource)
+                            : errorNotification;
+
+                    handleNotification(notificationConfig, {
                         key: `${id}-${resource}-notification`,
                         message: translate(
                             "notifications.deleteError",

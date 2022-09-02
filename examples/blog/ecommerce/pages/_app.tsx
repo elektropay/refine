@@ -31,8 +31,9 @@ function MyApp({ Component, pageProps }: AppProps): JSX.Element {
                 dataProvider={dataProvider}
                 resources={[{ name: "products" }]}
                 Layout={Layout}
-                reactQueryDevtoolConfig={{
-                    position: "bottom-left",
+                options={{
+                    reactQuery: { devtoolConfig: { position: "bottom-left" } },
+                    disableTelemetry: true,
                 }}
             >
                 <ChakraProvider>

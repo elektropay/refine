@@ -1,34 +1,20 @@
-import React from "react";
-import { BrowserRouter, MemoryRouter } from "react-router-dom";
+import React, { ReactNode } from "react";
+import { BrowserRouter } from "react-router-dom";
 
-import { Refine } from "@pankod/refine-core";
-
-import { MockRouterProvider, MockJSONServer } from "@test";
 import {
-    I18nProvider,
     AccessControlProvider,
     AuthProvider,
-    DataProvider,
     NotificationProvider,
-    IResourceItem,
+    Refine,
 } from "@pankod/refine-core";
 
-/* interface ITestWrapperProps {
-    authProvider?: IAuthContext;
-    dataProvider?: IDataContext;
-    i18nProvider?: I18nProvider;
-    accessControlProvider?: IAccessControlContext;
-    liveProvider?: ILiveContext;
-    resources?: IResourceItem[];
-    children?: React.ReactNode;
-    routerInitialEntries?: string[];
-    refineProvider?: IRefineContextProvider;
-} */
+import { MockRouterProvider, MockJSONServer } from "@test";
+import { I18nProvider, DataProvider, IResourceItem } from "@pankod/refine-core";
 
 const List = () => {
     return <div>hede</div>;
 };
-interface ITestWrapperProps {
+export interface ITestWrapperProps {
     dataProvider?: DataProvider;
     authProvider?: AuthProvider;
     resources?: IResourceItem[];
@@ -39,7 +25,9 @@ interface ITestWrapperProps {
     DashboardPage?: React.FC;
 }
 
-export const TestWrapper: (props: ITestWrapperProps) => React.FC = ({
+export const TestWrapper: (
+    props: ITestWrapperProps,
+) => React.FC<{ children?: ReactNode }> = ({
     dataProvider,
     authProvider,
     resources,
@@ -74,6 +62,20 @@ export const TestWrapper: (props: ITestWrapperProps) => React.FC = ({
                     resources={resources ?? [{ name: "posts", list: List }]}
                     accessControlProvider={accessControlProvider}
                     DashboardPage={DashboardPage ?? undefined}
+                    options={{
+                        disableTelemetry: true,
+                        reactQuery: {
+                            clientConfig: {
+                                defaultOptions: {
+                                    queries: {
+                                        cacheTime: 0,
+                                        staleTime: 0,
+                                        networkMode: "always",
+                                    },
+                                },
+                            },
+                        },
+                    }}
                 >
                     {children}
                 </Refine>

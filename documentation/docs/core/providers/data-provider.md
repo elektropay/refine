@@ -20,7 +20,14 @@ const dataProvider = {
     createMany: ({ resource, variables, metaData }) => Promise,
     deleteOne: ({ resource, id, variables, metaData }) => Promise,
     deleteMany: ({ resource, ids, variables, metaData }) => Promise,
-    getList: ({ resource, pagination, sort, filters, metaData }) => Promise,
+    getList: ({
+        resource,
+        pagination,
+        hasPagination,
+        sort,
+        filters,
+        metaData,
+    }) => Promise,
     getMany: ({ resource, ids, metaData }) => Promise,
     getOne: ({ resource, id, metaData }) => Promise,
     update: ({ resource, id, variables, metaData }) => Promise,
@@ -53,11 +60,14 @@ const dataProvider = {
 -   [Hasura](https://github.com/pankod/refine/tree/master/packages/hasura)
 -   [Nhost](https://github.com/pankod/refine/tree/master/packages/nhost)
 -   [Appwrite](https://github.com/pankod/refine/tree/master/packages/appwrite)
+-   [Medusa](https://github.com/pankod/refine/tree/master/packages/medusa)
 -   [Altogic](https://github.com/pankod/refine/tree/master/packages/altogic)
 
 ### Community ❤️
+
 -   [Firebase](https://github.com/rturan29/refine-firebase) by [rturan29](https://github.com/rturan29)
 -   [Directus](https://github.com/tspvivek/refine-directus) by [tspvivek](https://github.com/tspvivek)
+
 :::
 
 <br/>
@@ -66,10 +76,12 @@ const dataProvider = {
 **refine** consumes this methods using [data hooks](/core/hooks/data/useCreate.md).
 
 Data hooks are used to operate CRUD actions like creating a new record, listing a resource or deleting a record etc..
+
 :::
 
 :::note
 Data hooks uses [React Query](https://react-query.tanstack.com/) to manage data fetching. React Query handles important concerns like caching, invalidation, loading states etc..
+
 :::
 
 <br/>
@@ -102,7 +114,6 @@ const App: React.FC = () => {
 
 To activate multiple data provider in refine, we have to pass the default key with `dataProvider` for default data provider and we can pass other data provider with any key to the `<Refine />` component.
 
-
 ```tsx title="App.tsx"
 import { Refine } from "@pankod/refine-core";
 
@@ -110,14 +121,19 @@ import defaultDataProvider from "./dataProvider";
 import exampleDataProvider from "./dataProvider";
 
 const App: React.FC = () => {
-    return <Refine dataProvider={{
-        default: defaultDataProvider,
-        example: exampleDataProvider 
-    }} 
-    />;
+    return (
+        <Refine
+            dataProvider={{
+                default: defaultDataProvider,
+                example: exampleDataProvider,
+            }}
+        />
+    );
 };
 ```
+
 :::
+
 ## Creating a data provider
 
 We will build **"Simple REST Dataprovider"** of `@pankod/refine-simple-rest` from scratch to show the logic of how data provider methods interact with the API.
@@ -319,7 +335,7 @@ const SimpleRestDataProvider = (
 | Name      | Type               | Default |
 | --------- | ------------------ | ------- |
 | resource  | `string`           |         |
-| id        | [BaseKey][BaseKey] |         |
+| id        | [BaseKey][basekey] |         |
 | variables | `TVariables[]`     | `{}`    |
 
 > `TVariables` is a user defined type which can be passed to [`useDelete`](/core/hooks/data/useDelete.md) to type `variables`
@@ -372,7 +388,7 @@ const SimpleRestDataProvider = (
 | Name      | Type                 | Default |
 | --------- | -------------------- | ------- |
 | resource  | `string`             |         |
-| ids       | [BaseKey[]][BaseKey] |         |
+| ids       | [BaseKey[]][basekey] |         |
 | variables | `TVariables[]`       | `{}`    |
 
 > `TVariables` is a user defined type which can be passed to [`useDeleteMany`](/core/hooks/data/useDeleteMany.md) to type `variables`
@@ -426,7 +442,7 @@ const SimpleRestDataProvider = (
 | Name      | Type               | Default |
 | --------- | ------------------ | ------- |
 | resource  | `string`           |         |
-| id        | [BaseKey][BaseKey] |         |
+| id        | [BaseKey][basekey] |         |
 | variables | `TVariables`       | `{}`    |
 
 > `TVariables` is a user defined type which can be passed to [`useUpdate`](../../core/hooks/data/useUpdate.md#type-parameters) to type `variables`
@@ -485,7 +501,7 @@ const SimpleRestDataProvider = (
 | Name      | Type                 | Default |
 | --------- | -------------------- | ------- |
 | resource  | `string`             |         |
-| ids       | [BaseKey[]][BaseKey] |         |
+| ids       | [BaseKey[]][basekey] |         |
 | variables | `TVariables`         | `{}`    |
 
 > TVariables is a user defined type which can be passed to [`useUpdateMany`](../../core/hooks/data/useUpdateMany.md#type-parameters) to type `variables`
@@ -540,7 +556,7 @@ const SimpleRestDataProvider = (
 | Name     | Type               | Default |
 | -------- | ------------------ | ------- |
 | resource | `string`           |         |
-| id       | [BaseKey][BaseKey] |         |
+| id       | [BaseKey][basekey] |         |
 
 <br/>
 
@@ -561,6 +577,8 @@ const { data } = useOne<ICategory>({ resource: "categories", id: "1" });
 This method allows us to retrieve multiple items in a resource.
 
 ```ts title="dataProvider.ts"
+import { stringify } from "query-string";
+
 const SimpleRestDataProvider = (
     apiUrl: string,
     httpClient: AxiosInstance = axiosInstance,
@@ -581,12 +599,16 @@ const SimpleRestDataProvider = (
 })
 ```
 
+:::tip
+We are using the [`query-string`](https://www.npmjs.com/package/query-string) package for `stringify`.
+:::
+
 #### Parameter Types
 
 | Name     | Type                 | Default |
 | -------- | -------------------- | ------- |
 | resource | `string`             |         |
-| ids      | [BaseKey[]][BaseKey] |         |
+| ids      | [BaseKey[]][basekey] |         |
 
 <br/>
 
@@ -612,7 +634,7 @@ const SimpleRestDataProvider = (
     httpClient: AxiosInstance = axiosInstance,
 ): DataProvider => ({
 // highlight-start
-    getList: async ({ resource, pagination, filters, sort }) => {
+    getList: async ({ resource, hasPagination, pagination, filters, sort }) => {
         const url = `${apiUrl}/${resource}`;
 
         const { data, headers } = await httpClient.get(
@@ -632,12 +654,13 @@ const SimpleRestDataProvider = (
 
 #### Parameter Types
 
-| Name        | Type                                              |
-| ----------- | ------------------------------------------------- |
-| resource    | `string`                                          |
-| pagination? | [`Pagination`](/core/interfaces.md#pagination);   |
-| sort?       | [`CrudSorting`](/core/interfaces.md#crudsorting); |
-| filters?    | [`CrudFilters`](/core/interfaces.md#crudfilters); |
+| Name           | Type                                              |
+| -------------- | ------------------------------------------------- |
+| resource       | `string`                                          |
+| hasPagination? | `boolean` _(defaults to `true`)_                  |
+| pagination?    | [`Pagination`](/core/interfaces.md#pagination);   |
+| sort?          | [`CrudSorting`](/core/interfaces.md#crudsorting); |
+| filters?       | [`CrudFilters`](/core/interfaces.md#crudfilters); |
 
 <br/>
 
@@ -665,7 +688,8 @@ const SimpleRestDataProvider = (
     apiUrl: string,
     httpClient: AxiosInstance = axiosInstance,
 ): DataProvider => ({
-    getList: async ({ resource, pagination, filters, sort }) => {
+// highlight-next-line
+    getList: async ({ resource, hasPagination = true, pagination, filters, sort }) => {
         const url = `${apiUrl}/${resource}`;
 
 // highlight-start
@@ -674,10 +698,10 @@ const SimpleRestDataProvider = (
 // highlight-end
 
 // highlight-start
-        const query = {
+        const query = hasPagination ? {
             _start: (current - 1) * pageSize,
             _end: current * pageSize,
-        };
+        } : {};
 // highlight-end
 
         const { data, headers } = await httpClient.get(
@@ -702,8 +726,10 @@ import { useList } from "@pankod/refine-core";
 const { data } = useList({
     resource: "posts",
     config: {
-// highlight-next-line
+        // highlight-next-line
         pagination: { current: 1, pageSize: 10 },
+        // highlight-next-line
+        hasPagination: true, // This can be omitted since it's default to `true` in the `getList` method of our data provider.
     },
 });
 ```
@@ -745,7 +771,7 @@ const SimpleRestDataProvider = (
     apiUrl: string,
     httpClient: AxiosInstance = axiosInstance,
 ): DataProvider => ({
-    getList: async ({ resource, pagination, filters, sort }) => {
+    getList: async ({ resource, hasPagination = true, pagination, filters, sort }) => {
         const url = `${apiUrl}/${resource}`;
 
         const current = pagination?.current || 1;
@@ -754,14 +780,16 @@ const SimpleRestDataProvider = (
 // highlight-next-line
         const { _sort, _order } = generateSort(sort);
 
-// highlight-start
         const query = {
-            _start: (current - 1) * pageSize,
-            _end: current * pageSize,
+            ...(hasPagination ? {
+                _start: (current - 1) * pageSize,
+                _end: current * pageSize,
+            } : {}),
+// highlight-start
             _sort: _sort.join(","),
             _order: _order.join(","),
-        };
 // highlight-end
+        };
 
         const { data, headers } = await httpClient.get(
 // highlight-next-line
@@ -793,7 +821,7 @@ const { data } = useList({
     resource: "posts",
     config: {
         pagination: { current: 1, pageSize: 10 },
-// highlight-next-line
+        // highlight-next-line
         sort: [{ order: "asc", field: "title" }],
     },
 });
@@ -859,7 +887,7 @@ const SimpleRestDataProvider = (
     apiUrl: string,
     httpClient: AxiosInstance = axiosInstance,
 ): DataProvider => ({
-    getList: async ({ resource, pagination, filters, sort }) => {
+    getList: async ({ resource, hasPagination = true, pagination, filters, sort }) => {
         const url = `${apiUrl}/${resource}`;
 
         const current = pagination?.current || 1;
@@ -871,8 +899,10 @@ const SimpleRestDataProvider = (
         const queryFilters = generateFilter(filters);
 
         const query = {
-            _start: (current - 1) * pageSize,
-            _end: current * pageSize,
+            ...(hasPagination ? {
+                _start: (current - 1) * pageSize,
+                _end: current * pageSize,
+            } : {}),
             _sort: _sort.join(","),
             _order: _order.join(","),
         };
@@ -906,7 +936,7 @@ import { useList } from "@pankod/refine-core";
 const { data } = useList({
     resource: "posts",
     config: {
-// highlight-start
+        // highlight-start
         pagination: { current: 1, pageSize: 10 },
         sort: [{ order: "asc", field: "title" }],
         filters: [
@@ -917,7 +947,7 @@ const { data } = useList({
             },
         ],
     },
-// highlight-end
+    // highlight-end
 });
 ```
 
@@ -1041,4 +1071,4 @@ axiosInstance.interceptors.response.use(
 ...
 ```
 
-[BaseKey]: /core/interfaces.md#basekey
+[basekey]: /core/interfaces.md#basekey

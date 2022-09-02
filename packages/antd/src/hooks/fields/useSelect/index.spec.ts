@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook, waitFor } from "@testing-library/react";
 
 import { MockJSONServer, TestWrapper, act } from "@test";
 
@@ -6,7 +6,7 @@ import { useSelect } from "./";
 
 describe("useSelect Hook", () => {
     it("default", async () => {
-        const { result, waitFor } = renderHook(
+        const { result } = renderHook(
             () =>
                 useSelect({
                     resource: "posts",
@@ -17,24 +17,25 @@ describe("useSelect Hook", () => {
         );
 
         await waitFor(() => {
-            return !result.current.queryResult?.isLoading;
+            expect(!result.current.queryResult.isFetching).toBeTruthy();
         });
 
-        const { selectProps } = result.current;
-        const { options } = selectProps;
-
-        expect(options).toHaveLength(2);
-        expect(options).toEqual([
-            {
-                label: "Necessitatibus necessitatibus id et cupiditate provident est qui amet.",
-                value: "1",
-            },
-            { label: "Recusandae consectetur aut atque est.", value: "2" },
-        ]);
+        await waitFor(() =>
+            expect(result.current.selectProps.options).toHaveLength(2),
+        );
+        await waitFor(() =>
+            expect(result.current.selectProps.options).toEqual([
+                {
+                    label: "Necessitatibus necessitatibus id et cupiditate provident est qui amet.",
+                    value: "1",
+                },
+                { label: "Recusandae consectetur aut atque est.", value: "2" },
+            ]),
+        );
     });
 
     it("defaultValue", async () => {
-        const { result, waitFor } = renderHook(
+        const { result } = renderHook(
             () =>
                 useSelect({
                     resource: "posts",
@@ -46,24 +47,25 @@ describe("useSelect Hook", () => {
         );
 
         await waitFor(() => {
-            return !result.current.queryResult.isLoading;
+            expect(!result.current.queryResult.isFetching).toBeTruthy();
         });
 
-        const { selectProps } = result.current;
-        const { options } = selectProps;
-
-        expect(options).toHaveLength(2);
-        expect(options).toEqual([
-            {
-                label: "Necessitatibus necessitatibus id et cupiditate provident est qui amet.",
-                value: "1",
-            },
-            { label: "Recusandae consectetur aut atque est.", value: "2" },
-        ]);
+        await waitFor(() =>
+            expect(result.current.selectProps.options).toHaveLength(2),
+        );
+        await waitFor(() =>
+            expect(result.current.selectProps.options).toEqual([
+                {
+                    label: "Necessitatibus necessitatibus id et cupiditate provident est qui amet.",
+                    value: "1",
+                },
+                { label: "Recusandae consectetur aut atque est.", value: "2" },
+            ]),
+        );
     });
 
     it("defaultValue is not an array", async () => {
-        const { result, waitFor } = renderHook(
+        const { result } = renderHook(
             () =>
                 useSelect({
                     resource: "posts",
@@ -75,24 +77,25 @@ describe("useSelect Hook", () => {
         );
 
         await waitFor(() => {
-            return !result.current.queryResult.isLoading;
+            expect(!result.current.queryResult.isFetching).toBeTruthy();
         });
 
-        const { selectProps } = result.current;
-        const { options } = selectProps;
-
-        expect(options).toHaveLength(2);
-        expect(options).toEqual([
-            {
-                label: "Necessitatibus necessitatibus id et cupiditate provident est qui amet.",
-                value: "1",
-            },
-            { label: "Recusandae consectetur aut atque est.", value: "2" },
-        ]);
+        await waitFor(() =>
+            expect(result.current.selectProps.options).toHaveLength(2),
+        );
+        await waitFor(() =>
+            expect(result.current.selectProps.options).toEqual([
+                {
+                    label: "Necessitatibus necessitatibus id et cupiditate provident est qui amet.",
+                    value: "1",
+                },
+                { label: "Recusandae consectetur aut atque est.", value: "2" },
+            ]),
+        );
     });
 
     it("should success data with resource with optionLabel and optionValue", async () => {
-        const { result, waitFor } = renderHook(
+        const { result } = renderHook(
             () =>
                 useSelect<{ id: string; slug: string }>({
                     resource: "posts",
@@ -105,21 +108,22 @@ describe("useSelect Hook", () => {
         );
 
         await waitFor(() => {
-            return result.current.queryResult.isSuccess;
+            expect(!result.current.queryResult.isFetching).toBeTruthy();
         });
 
-        const { selectProps } = result.current;
-        const { options } = selectProps;
-
-        expect(options).toHaveLength(2);
-        expect(options).toEqual([
-            { label: "ut-ad-et", value: "1" },
-            { label: "consequatur-molestiae-rerum", value: "2" },
-        ]);
+        await waitFor(() =>
+            expect(result.current.selectProps.options).toHaveLength(2),
+        );
+        await waitFor(() =>
+            expect(result.current.selectProps.options).toEqual([
+                { label: "ut-ad-et", value: "1" },
+                { label: "consequatur-molestiae-rerum", value: "2" },
+            ]),
+        );
     });
 
     it("should success data with resource with filters", async () => {
-        const { result, waitFor } = renderHook(
+        const { result } = renderHook(
             () =>
                 useSelect<{ id: string; slug: string }>({
                     resource: "posts",
@@ -137,27 +141,28 @@ describe("useSelect Hook", () => {
         );
 
         await waitFor(() => {
-            return result.current.queryResult.isSuccess;
+            expect(result.current.queryResult.isSuccess).toBeTruthy();
         });
 
-        const { selectProps } = result.current;
-        const { options } = selectProps;
-
-        expect(options).toHaveLength(2);
-        expect(options).toEqual([
-            {
-                label: "Necessitatibus necessitatibus id et cupiditate provident est qui amet.",
-                value: "1",
-            },
-            { label: "Recusandae consectetur aut atque est.", value: "2" },
-        ]);
+        await waitFor(() =>
+            expect(result.current.selectProps.options).toHaveLength(2),
+        );
+        await waitFor(() =>
+            expect(result.current.selectProps.options).toEqual([
+                {
+                    label: "Necessitatibus necessitatibus id et cupiditate provident est qui amet.",
+                    value: "1",
+                },
+                { label: "Recusandae consectetur aut atque est.", value: "2" },
+            ]),
+        );
     });
 
     it("onSearch debounce with default value (300ms)", async () => {
         const getListMock = jest.fn(() =>
             Promise.resolve({ data: [], total: 0 }),
         );
-        const { result, waitFor, waitForNextUpdate } = renderHook(
+        const { result } = renderHook(
             () =>
                 useSelect({
                     resource: "posts",
@@ -174,32 +179,31 @@ describe("useSelect Hook", () => {
         );
 
         await waitFor(() => {
-            return !result.current.queryResult?.isLoading;
+            expect(result.current.queryResult.isSuccess).toBeTruthy();
         });
 
-        expect(getListMock).toBeCalledTimes(1);
+        await waitFor(() => expect(getListMock).toBeCalledTimes(1));
 
         const { selectProps } = result.current;
 
-        act(() => {
-            for (let index = 0; index < 10; index++) {
-                selectProps!.onSearch!(index.toString());
-            }
-        });
-        await waitForNextUpdate();
-
-        expect(getListMock).toBeCalledTimes(2);
+        selectProps?.onSearch?.("1");
+        selectProps?.onSearch?.("12");
+        selectProps?.onSearch?.("123");
 
         await waitFor(() => {
-            return !result.current.queryResult?.isLoading;
+            expect(!result.current.queryResult.isFetching).toBeTruthy();
         });
+
+        await waitFor(() => expect(getListMock).toBeCalledTimes(2));
     });
 
     it("onSearch disabled debounce (0ms)", async () => {
+        jest.useFakeTimers();
+
         const getListMock = jest.fn(() => {
             return Promise.resolve({ data: [], total: 0 });
         });
-        const { result, waitFor, waitForNextUpdate } = renderHook(
+        const { result } = renderHook(
             () =>
                 useSelect({
                     resource: "posts",
@@ -216,31 +220,37 @@ describe("useSelect Hook", () => {
         );
 
         await waitFor(() => {
-            return !result.current.queryResult?.isLoading;
+            expect(!result.current.queryResult.isFetching).toBeTruthy();
         });
 
-        expect(getListMock).toBeCalledTimes(1);
+        await waitFor(() => expect(getListMock).toBeCalledTimes(1));
 
         const { selectProps } = result.current;
 
-        selectProps!.onSearch!("1");
-        await waitForNextUpdate();
-        selectProps!.onSearch!("2");
-        await waitForNextUpdate();
-        selectProps!.onSearch!("3");
-        await waitForNextUpdate();
-
-        expect(getListMock).toBeCalledTimes(4);
-
-        await waitFor(() => {
-            return !result.current.queryResult?.isLoading;
+        selectProps?.onSearch?.("1");
+        act(() => {
+            jest.advanceTimersToNextTimer();
         });
+
+        selectProps?.onSearch?.("2");
+        act(() => {
+            jest.advanceTimersToNextTimer();
+        });
+
+        selectProps?.onSearch?.("3");
+        act(() => {
+            jest.advanceTimersToNextTimer();
+        });
+
+        await waitFor(() => expect(getListMock).toBeCalledTimes(4));
+
+        jest.useRealTimers();
     });
 
     it("should invoke queryOptions methods successfully", async () => {
         const mockFunc = jest.fn();
 
-        const { result, waitFor } = renderHook(
+        const { result } = renderHook(
             () =>
                 useSelect({
                     resource: "posts",
@@ -256,20 +266,21 @@ describe("useSelect Hook", () => {
         );
 
         await waitFor(() => {
-            return !result.current.queryResult?.isLoading;
+            expect(result.current.queryResult.isSuccess).toBeTruthy();
         });
 
-        const { selectProps } = result.current;
-        const { options } = selectProps;
-
-        expect(options).toHaveLength(2);
-        expect(options).toEqual([
-            {
-                label: "Necessitatibus necessitatibus id et cupiditate provident est qui amet.",
-                value: "1",
-            },
-            { label: "Recusandae consectetur aut atque est.", value: "2" },
-        ]);
+        await waitFor(() =>
+            expect(result.current.selectProps.options).toHaveLength(2),
+        );
+        await waitFor(() =>
+            expect(result.current.selectProps.options).toEqual([
+                {
+                    label: "Necessitatibus necessitatibus id et cupiditate provident est qui amet.",
+                    value: "1",
+                },
+                { label: "Recusandae consectetur aut atque est.", value: "2" },
+            ]),
+        );
 
         expect(mockFunc).toBeCalled();
     });
@@ -277,7 +288,7 @@ describe("useSelect Hook", () => {
     it("should invoke queryOptions methods for default value successfully", async () => {
         const mockFunc = jest.fn();
 
-        const { result, waitFor } = renderHook(
+        const { result } = renderHook(
             () =>
                 useSelect({
                     resource: "posts",
@@ -294,20 +305,21 @@ describe("useSelect Hook", () => {
         );
 
         await waitFor(() => {
-            return !result.current.queryResult.isLoading;
+            expect(result.current.queryResult.isSuccess).toBeTruthy();
         });
 
-        const { selectProps } = result.current;
-        const { options } = selectProps;
-
-        expect(options).toHaveLength(2);
-        expect(options).toEqual([
-            {
-                label: "Necessitatibus necessitatibus id et cupiditate provident est qui amet.",
-                value: "1",
-            },
-            { label: "Recusandae consectetur aut atque est.", value: "2" },
-        ]);
+        await waitFor(() =>
+            expect(result.current.selectProps.options).toHaveLength(2),
+        );
+        await waitFor(() =>
+            expect(result.current.selectProps.options).toEqual([
+                {
+                    label: "Necessitatibus necessitatibus id et cupiditate provident est qui amet.",
+                    value: "1",
+                },
+                { label: "Recusandae consectetur aut atque est.", value: "2" },
+            ]),
+        );
         expect(mockFunc).toBeCalled();
     });
 });

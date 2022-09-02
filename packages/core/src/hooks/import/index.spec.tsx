@@ -1,5 +1,5 @@
 import { TestWrapper, MockJSONServer } from "@test";
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook } from "@testing-library/react";
 import * as papaparse from "papaparse";
 
 import { useImport } from ".";
@@ -44,12 +44,12 @@ const parsedData = [
     },
 ];
 
-afterEach(() => {
-    jest.clearAllMocks();
-    jest.useRealTimers();
-});
-
 describe("useImport hook", () => {
+    afterEach(() => {
+        jest.clearAllMocks();
+        jest.useRealTimers();
+    });
+
     it("should render hook without crashing", () => {
         const result = renderHook(() => useImport(), {
             wrapper: TestWrapper({
@@ -78,23 +78,15 @@ describe("useImport hook", () => {
         );
 
         await act(async () => {
-            jest.useFakeTimers();
-
             await result.current.handleChange?.({
                 file: file,
             });
-
-            jest.runAllTimers();
         });
 
-        Array.from({ length: parsedData.length }, (_, i) => i + 1).forEach(
-            (i) => {
-                expect(onProgressMock).toBeCalledWith({
-                    totalAmount: parsedData.length,
-                    processedAmount: i,
-                });
-            },
-        );
+        expect(onProgressMock).toBeCalledWith({
+            totalAmount: parsedData.length,
+            processedAmount: 3,
+        });
     });
 
     it("should trigger parse", async () => {
@@ -268,6 +260,13 @@ describe("useImport hook", () => {
     });
 
     describe("batchSize = undefined", () => {
+        beforeEach(() => {
+            jest.spyOn(console, "error").mockImplementation((message) => {
+                if (message?.message === "something happened") return;
+                console.warn(message);
+            });
+        });
+
         it("should call mutate method of result of useCreateMany one time with correct values if batchSize=undefined", async () => {
             const mockDataProvider = {
                 default: {
@@ -428,13 +427,9 @@ describe("useImport hook", () => {
             );
 
             await act(async () => {
-                jest.useFakeTimers();
-
                 await result.current.handleChange({
                     file: file,
                 });
-
-                jest.runAllTimers();
             });
         });
 
@@ -494,13 +489,9 @@ describe("useImport hook", () => {
             );
 
             await act(async () => {
-                jest.useFakeTimers();
-
                 await result.current.handleChange({
                     file: file,
                 });
-
-                jest.runAllTimers();
             });
         });
     });

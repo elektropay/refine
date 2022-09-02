@@ -52,7 +52,7 @@ export const PostCreate = () => {
 };
 
 interface ICategory {
-    id: string;
+    id: number;
     title: string;
 }
 ```
@@ -135,6 +135,21 @@ const { selectProps } = useSelect({
 
 Allows you to change the values and appearance of your options. Default values are `optionLabel = "title"` and `optionValue = "id"`.
 
+:::tip
+
+Supports use with `optionLabel` and `optionValue` [Object path](https://lodash.com/docs/4.17.15#get) syntax.
+
+```tsx
+const { options } = useSelect({
+    resource: "categories",
+// highlight-start
+    optionLabel: "nested.title",
+    optionValue: "nested.id",
+// highlight-end
+});
+```
+:::
+
 ### `filters`
 
 ```tsx
@@ -200,8 +215,25 @@ const { selectProps } = useSelect({
 // highlight-end
 });
 ```
-
 If defined, it allows us to override the filters to use when fetching list of records. Thus, it . It should return [`CrudFilters`](/core/interfaces.md#crudfilters).
+
+#### Client-side filtering
+
+```tsx
+const { selectProps } = useSelect({
+    resource: "categories",
+});
+
+<Select
+    {...selectProps}
+// highlight-start
+    onSearch={undefined}
+    filterOption={true}
+    optionFilterProp="label" // or "value"
+// highlight-end
+/>
+```
+
 
 ### `queryOptions`
 
@@ -270,11 +302,9 @@ const { selectProps } = useSelect({
 | defaultValueQueryResult    | Result of the query of a `defaultValue` record | [`QueryObserverResult<{ data: TData }>`](https://react-query.tanstack.com/reference/useQuery) |
 | defaultValueQueryOnSuccess | Default value onSuccess method                 | `() => void`                                                                                  |
 
-## Live Codesandbox Example
+## Live StackBlitz Example
 
-<iframe src="https://codesandbox.io/embed/refine-use-select-example-xx9h5?autoresize=1&fontsize=14&theme=dark&view=preview"
+<iframe loading="lazy" src="https://stackblitz.com//github/pankod/refine/tree/master/examples/field/useSelect?embed=1&view=preview&theme=dark&preset=node"
     style={{width: "100%", height:"80vh", border: "0px", borderRadius: "8px", overflow:"hidden"}}
     title="refine-use-select-example"
-    allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
-    sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
 ></iframe>

@@ -192,7 +192,7 @@ Although this is a solution, it complicates your project in many ways (debugging
 The providers that React admin supports are as follows:
 * Simple Rest: [https://github.com/marmelab/react-admin/tree/master/packages/ra-data-simple-rest](https://github.com/marmelab/react-admin/tree/master/packages/ra-data-simple-rest)
 * Json Server: [https://github.com/marmelab/react-admin/tree/master/packages/ra-data-json-server](https://github.com/marmelab/react-admin/tree/master/packages/ra-data-json-server)
-* Simple GrapgQL: [https://github.com/marmelab/react-admin/tree/master/packages/ra-data-graphql-simple](https://github.com/marmelab/react-admin/tree/master/packages/ra-data-graphql-simple)
+* Simple GraphQL: [https://github.com/marmelab/react-admin/tree/master/packages/ra-data-graphql-simple](https://github.com/marmelab/react-admin/tree/master/packages/ra-data-graphql-simple)
 * Local JSON: [https://github.com/marmelab/react-admin/tree/master/packages/ra-data-localstorage](https://github.com/marmelab/react-admin/tree/master/packages/ra-data-localstorage)
 * Local Strage: [https://github.com/marmelab/react-admin/tree/master/packages/ra-data-localstorage](https://github.com/marmelab/react-admin/tree/master/packages/ra-data-localstorage)
 * Supabase: [https://github.com/marmelab/ra-supabase](https://github.com/marmelab/ra-supabase)
@@ -291,7 +291,7 @@ function MyApp({ Component, pageProps }: AppProps): JSX.Element {
 
 export default MyApp;
 ```
-[For more information on how to add SSR-Next.js to your Refine project ->](https://refine.dev/docs/guides-and-concepts/ssr-nextjs/) 
+[For more information on how to add SSR-Next.js to your Refine project ->](https://refine.dev/docs/guides-and-concepts/ssr/nextjs/) 
 
 ### Routing
 **refine** uses a customized Router Provider to save routes and navigate between pages. **refine** offers a much more flexible structure thanks to its routerProvider support.
@@ -429,8 +429,7 @@ In order to create a query, we need to specify the fields that we will use from 
 ```tsx src/App.tsx
 import { Refine } from "@pankod/refine";
 import routerProvider from "@pankod/refine-react-router-v6";
-import dataProvider from "@pankod/refine-strapi-graphql";
-import { GraphQLClient } from "graphql-request";
+import dataProvider, { GraphQLClient } from "@pankod/refine-strapi-graphql";
 
 const client = new GraphQLClient("API_URL");
 

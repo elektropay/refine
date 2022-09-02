@@ -1,7 +1,6 @@
 import React from "react";
 import {
     useAuthenticated,
-    useIsAuthenticated,
     useRefineContext,
     useResource,
     useRouterContext,
@@ -37,23 +36,31 @@ export const RouterComponent: React.FC<RouterProps> = ({
 
     const { routes: customRoutes }: { routes: Route[] } = useRouterContext();
 
-    const isAuthenticated = useIsAuthenticated();
-    const { isLoading } = useAuthenticated({ type: "routeProvider" });
+    const { isFetching, isError } = useAuthenticated({
+        type: "routeProvider",
+    });
 
-    if (isLoading) {
+    if (isFetching) {
         return null;
     }
+
+    const isAuthenticated = isError ? false : true;
+
+    const renderLoginRouteElement = (): JSX.Element => {
+        if (LoginPage) return <LoginPage />;
+        return <DefaultLoginPage />;
+    };
 
     if (!isAuthenticated) {
         const routes: Route[] = [
             ...[...(customRoutes || [])],
             {
                 path: "/",
-                element: LoginPage ? <LoginPage /> : <DefaultLoginPage />,
+                element: renderLoginRouteElement(),
             },
             {
                 path: "/login",
-                element: LoginPage ? <LoginPage /> : <DefaultLoginPage />,
+                element: renderLoginRouteElement(),
             },
             {
                 path: "*",

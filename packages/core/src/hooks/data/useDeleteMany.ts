@@ -1,4 +1,8 @@
-import { useQueryClient, useMutation, UseMutationResult } from "react-query";
+import {
+    useQueryClient,
+    useMutation,
+    UseMutationResult,
+} from "@tanstack/react-query";
 import pluralize from "pluralize";
 
 import {
@@ -272,10 +276,15 @@ export const useDeleteMany = <
             ) => {
                 // Remove the queries from the cache:
                 ids.forEach((id) =>
-                    queryClient.removeQueries(context.queryKey.detail(id)),
+                    queryClient.removeQueries(context?.queryKey.detail(id)),
                 );
 
-                handleNotification(successNotification, {
+                const notificationConfig =
+                    typeof successNotification === "function"
+                        ? successNotification(_data, ids, resource)
+                        : successNotification;
+
+                handleNotification(notificationConfig, {
                     key: `${ids}-${resource}-notification`,
                     description: translate("notifications.success", "Success"),
                     message: translate(
@@ -297,6 +306,11 @@ export const useDeleteMany = <
                     payload: { ids },
                     date: new Date(),
                 });
+
+                // Remove the queries from the cache:
+                ids.forEach((id) =>
+                    queryClient.removeQueries(context?.queryKey.detail(id)),
+                );
             },
             onError: (err, { ids, resource, errorNotification }, context) => {
                 // set back the queries to the context:
@@ -310,7 +324,12 @@ export const useDeleteMany = <
                     checkError(err);
                     const resourceSingular = pluralize.singular(resource);
 
-                    handleNotification(errorNotification, {
+                    const notificationConfig =
+                        typeof errorNotification === "function"
+                            ? errorNotification(err, ids, resource)
+                            : errorNotification;
+
+                    handleNotification(notificationConfig, {
                         key: `${ids}-${resource}-notification`,
                         message: translate(
                             "notifications.deleteError",

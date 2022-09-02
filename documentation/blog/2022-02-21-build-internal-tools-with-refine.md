@@ -156,6 +156,7 @@ Refine includes many out-of-the-box data providers to use in your projects like:
 -   [Supabase](https://github.com/pankod/refine/tree/master/packages/supabase)
 -   [Hasura](https://github.com/pankod/refine/tree/master/packages/hasura)
 -   [Nhost](https://github.com/pankod/refine/tree/master/packages/nhost)
+-   [Medusa](https://github.com/pankod/refine/tree/master/packages/medusa)
 -   [Appwrite](https://github.com/pankod/refine/tree/master/packages/appwrite)
 -   [Altogic](https://github.com/pankod/refine/tree/master/packages/altogic)
 
@@ -293,8 +294,8 @@ Refer to the [`accessControlProvider`](https://refine.dev/docs/core/providers/ac
 
 ### Out-of-the-box access control providers
 
--   Casbin - [Source Code](https://github.com/pankod/refine/tree/master/examples/accessControl/casbin) - [Demo](https://codesandbox.io/s/access-control-casbin-react-l06vy)
--   Cerbos - [Source Code](https://github.com/pankod/refine/tree/master/examples/accessControl/cerbos) - [Demo](https://codesandbox.io/s/access-control-cerbos-react-mbhei)
+-   Casbin - [Source Code](https://github.com/pankod/refine/tree/master/examples/accessControl/casbin) - [Demo](https://codesandbox.io/s/github/pankod/refine/tree/master/examples/accessControl/casbin)
+-   Cerbos - [Source Code](https://github.com/pankod/refine/tree/master/examples/accessControl/cerbos) - [Demo](https://codesandbox.io/s/github/pankod/refine/tree/master/examples/accessControl/cerbos)
 
 ## Internationalization
 
@@ -334,7 +335,7 @@ If you send an event after the relevant operations on the server, Refine will in
 
 ### Out-of-the-box access control providers
 
--   Ably - [Source Code](https://github.com/pankod/refine/blob/master/packages/ably/src/index.ts) - [Demo](https://codesandbox.io/s/refine-ably-example-9swpp)
+-   Ably - [Source Code](https://github.com/pankod/refine/blob/master/packages/ably/src/index.ts) - [Demo](https://codesandbox.io/s/github/pankod/refine/tree/master/examples/ably)
 -   Supabase - [Source Code](https://github.com/pankod/refine/blob/master/packages/supabase/src/index.ts#L187)
 -   Appwrite - [Source Code](https://github.com/pankod/refine/blob/master/packages/appwrite/src/index.ts#L252)
 

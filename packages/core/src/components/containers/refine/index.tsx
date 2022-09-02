@@ -5,34 +5,29 @@ import {
     QueryCache,
     MutationCache,
     DefaultOptions,
-} from "react-query";
-import { ReactQueryDevtools } from "react-query/devtools";
+} from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { AuthContextProvider } from "@contexts/auth";
 import { DataContextProvider } from "@contexts/data";
 import { LiveContextProvider } from "@contexts/live";
-import {
-    defaultProvider,
-    TranslationContextProvider,
-} from "@contexts/translation";
+import { TranslationContextProvider } from "@contexts/translation";
 import { ResourceContextProvider, IResourceItem } from "@contexts/resource";
 import { RefineContextProvider } from "@contexts/refine";
 import { UndoableQueueContextProvider } from "@contexts/undoableQueue";
 import { UnsavedWarnContextProvider } from "@contexts/unsavedWarn";
 import { RouterContextProvider } from "@contexts/router";
-import {
-    defaultAccessControlContext,
-    AccessControlContextProvider,
-} from "@contexts/accessControl";
-import {
-    NotificationContextProvider,
-    defaultNotificationProvider,
-} from "@contexts/notification";
+import { AccessControlContextProvider } from "@contexts/accessControl";
+import { NotificationContextProvider } from "@contexts/notification";
+import { AuditLogContextProvider } from "@contexts/auditLog";
 import { ReadyPage as DefaultReadyPage, RouteChangeHandler } from "@components";
+import { handleRefineOptions, routeGenerator } from "@definitions";
+import { Telemetry } from "@components/telemetry";
+import { useDeepMemo } from "@hooks/deepMemo";
+
 import {
     MutationMode,
     IDataContextProvider,
-    IAuthContext,
     I18nProvider,
     LayoutProps,
     TitleProps,
@@ -40,11 +35,13 @@ import {
     ResourceProps,
     ILiveContext,
     LiveModeProps,
-    IAccessControlContext,
-    INotificationContext,
     IDataMultipleContextProvider,
+    AuthProvider,
+    NotificationProvider,
+    AccessControlProvider,
+    AuditLogProvider,
+    IRefineOptions,
 } from "../../../interfaces";
-import { routeGenerator } from "@definitions";
 
 interface QueryClientConfig {
     queryCache?: QueryCache;
@@ -52,21 +49,42 @@ interface QueryClientConfig {
     defaultOptions?: DefaultOptions;
 }
 export interface RefineProps {
-    authProvider?: IAuthContext;
+    authProvider?: AuthProvider;
     dataProvider: IDataContextProvider | IDataMultipleContextProvider;
     liveProvider?: ILiveContext;
     routerProvider: IRouterProvider;
-    notificationProvider?: INotificationContext;
-    accessControlProvider?: IAccessControlContext;
+    notificationProvider?: NotificationProvider | (() => NotificationProvider);
+    accessControlProvider?: AccessControlProvider;
+    auditLogProvider?: AuditLogProvider;
     resources?: ResourceProps[];
     i18nProvider?: I18nProvider;
     catchAll?: React.ReactNode;
     LoginPage?: React.FC;
     DashboardPage?: React.FC;
     ReadyPage?: React.FC;
+    /** 
+        @deprecated `mutationMode` property is deprecated at this level. Use it from within `options` instead.
+        @example  `options={{ mutationMode: "optimistic" }}`
+        @see https://refine.dev/docs/core/components/refine-config/#mutationmode
+     */
     mutationMode?: MutationMode;
+    /** 
+        @deprecated `syncWithLocation` property is deprecated at this level. Use it from within `options` instead.
+        @example  `options={{ syncWithLocation: true }}`
+        @see https://refine.dev/docs/core/components/refine-config/#syncwithlocation
+     */
     syncWithLocation?: boolean;
+    /** 
+        @deprecated `warnwhenunsavedchanges` property is deprecated at this level. Use it from within `options` instead.
+        @example  `options={{ warnwhenunsavedchanges: true }}`
+        @see https://refine.dev/docs/core/components/refine-config/#warnwhenunsavedchanges
+     */
     warnWhenUnsavedChanges?: boolean;
+    /** 
+        @deprecated `undoableTimeout` property is deprecated at this level. Use it from within `options` instead.
+        @example  `options={{ undoableTimeout: 5000 }}`
+        @see https://refine.dev/docs/core/components/refine-config/#undoabletimeout
+     */
     undoableTimeout?: number;
     Layout?: React.FC<LayoutProps>;
     Sider?: React.FC;
@@ -74,10 +92,35 @@ export interface RefineProps {
     Footer?: React.FC;
     OffLayoutArea?: React.FC;
     Title?: React.FC<TitleProps>;
+    /** 
+        @deprecated `reactQueryClientConfig` property is deprecated. Use `clientConfig` in `reactQuery` in `options` instead.
+        @example  `options={{ reactQuery: { clientConfig: { queryCache: new QueryCache() } } }}`
+        @see https://refine.dev/docs/core/components/refine-config/#clientconfig
+     */
     reactQueryClientConfig?: QueryClientConfig;
-    reactQueryDevtoolConfig?: any;
+    /** 
+        @deprecated `reactQueryDevtoolConfig` property is deprecated. Use `devtoolConfig` in `reactQuery` in `options` instead.
+        @example  `options={{ reactQuery: { devtoolConfig: false } }}`
+        @see https://refine.dev/docs/core/components/refine-config/#devtoolConfig
+     */
+    reactQueryDevtoolConfig?:
+        | React.ComponentProps<typeof ReactQueryDevtools>
+        | false;
+
+    /** 
+        @deprecated `liveMode` property is deprecated. Use it from within `options` instead.
+        @example  `options={{ liveMode: "auto" }}`
+        @see https://refine.dev/docs/core/components/refine-config/#livemode
+     */
     liveMode?: LiveModeProps["liveMode"];
     onLiveEvent?: LiveModeProps["onLiveEvent"];
+    children?: React.ReactNode;
+    /** 
+        @deprecated `disableTelemetry` property is deprecated. Use it from within `options` instead.
+        @example  `options={{ disableTelemetry: true }}`
+     */
+    disableTelemetry?: boolean;
+    options?: IRefineOptions;
 }
 
 /**
@@ -91,8 +134,9 @@ export const Refine: React.FC<RefineProps> = ({
     authProvider,
     dataProvider,
     routerProvider,
-    notificationProvider = defaultNotificationProvider,
-    accessControlProvider = defaultAccessControlContext,
+    notificationProvider,
+    accessControlProvider,
+    auditLogProvider,
     resources: resourcesFromProps,
     DashboardPage,
     ReadyPage,
@@ -100,11 +144,11 @@ export const Refine: React.FC<RefineProps> = ({
     catchAll,
     children,
     liveProvider,
-    i18nProvider = defaultProvider.i18nProvider,
-    mutationMode = "pessimistic",
-    syncWithLocation = false,
-    warnWhenUnsavedChanges = false,
-    undoableTimeout = 5000,
+    i18nProvider,
+    mutationMode,
+    syncWithLocation,
+    warnWhenUnsavedChanges,
+    undoableTimeout,
     Title,
     Layout,
     Sider,
@@ -115,55 +159,86 @@ export const Refine: React.FC<RefineProps> = ({
     reactQueryDevtoolConfig,
     liveMode,
     onLiveEvent,
+    disableTelemetry,
+    options,
 }) => {
-    const queryClient = new QueryClient({
-        ...reactQueryClientConfig,
-        defaultOptions: {
-            ...reactQueryClientConfig?.defaultOptions,
-            queries: {
-                refetchOnWindowFocus: false,
-                keepPreviousData: true,
-                ...reactQueryClientConfig?.defaultOptions?.queries,
+    const {
+        optionsWithDefaults,
+        disableTelemetryWithDefault,
+        reactQueryWithDefaults,
+    } = handleRefineOptions({
+        options,
+        disableTelemetry,
+        liveMode,
+        mutationMode,
+        reactQueryClientConfig,
+        reactQueryDevtoolConfig,
+        syncWithLocation,
+        warnWhenUnsavedChanges,
+        undoableTimeout,
+    });
+
+    const queryClient = useDeepMemo(() => {
+        return new QueryClient({
+            ...reactQueryWithDefaults.clientConfig,
+            defaultOptions: {
+                ...reactQueryWithDefaults.clientConfig.defaultOptions,
+                queries: {
+                    refetchOnWindowFocus: false,
+                    keepPreviousData: true,
+                    ...reactQueryWithDefaults.clientConfig.defaultOptions
+                        ?.queries,
+                },
             },
-        },
-    });
-
-    const resources: IResourceItem[] = [];
-
-    resourcesFromProps?.map((resource) => {
-        resources.push({
-            key: resource.key,
-            name: resource.name,
-            label: resource.options?.label,
-            icon: resource.icon,
-            route:
-                resource.options?.route ??
-                routeGenerator(resource, resourcesFromProps),
-            canCreate: !!resource.create,
-            canEdit: !!resource.edit,
-            canShow: !!resource.show,
-            canDelete: resource.canDelete,
-            create: resource.create,
-            show: resource.show,
-            list: resource.list,
-            edit: resource.edit,
-            options: resource.options,
-            parentName: resource.parentName,
         });
-    });
+    }, [reactQueryWithDefaults.clientConfig]);
+
+    const notificationProviderContextValues = React.useMemo(() => {
+        return typeof notificationProvider === "function"
+            ? notificationProvider()
+            : notificationProvider ?? {};
+    }, [notificationProvider]);
+
+    const resources: IResourceItem[] = useDeepMemo(() => {
+        const _resources: IResourceItem[] = [];
+
+        resourcesFromProps?.forEach((resource) => {
+            _resources.push({
+                key: resource.key,
+                name: resource.name,
+                label: resource.options?.label,
+                icon: resource.icon,
+                route:
+                    resource.options?.route ??
+                    routeGenerator(resource, resourcesFromProps),
+                canCreate: !!resource.create,
+                canEdit: !!resource.edit,
+                canShow: !!resource.show,
+                canDelete: resource.canDelete,
+                create: resource.create,
+                show: resource.show,
+                list: resource.list,
+                edit: resource.edit,
+                options: resource.options,
+                parentName: resource.parentName,
+            });
+        });
+
+        return _resources;
+    }, [resourcesFromProps]);
 
     if (resources.length === 0) {
         return ReadyPage ? <ReadyPage /> : <DefaultReadyPage />;
     }
 
-    const { RouterComponent } = routerProvider;
+    const { RouterComponent = React.Fragment } = routerProvider;
 
     return (
         <QueryClientProvider client={queryClient}>
-            <NotificationContextProvider {...notificationProvider}>
+            <NotificationContextProvider {...notificationProviderContextValues}>
                 <AuthContextProvider
-                    {...authProvider}
-                    isProvided={!!authProvider}
+                    {...(authProvider ?? {})}
+                    isProvided={Boolean(authProvider)}
                 >
                     <DataContextProvider {...dataProvider}>
                         <LiveContextProvider liveProvider={liveProvider}>
@@ -173,53 +248,63 @@ export const Refine: React.FC<RefineProps> = ({
                                         i18nProvider={i18nProvider}
                                     >
                                         <AccessControlContextProvider
-                                            {...accessControlProvider}
+                                            {...(accessControlProvider ?? {})}
                                         >
-                                            <UndoableQueueContextProvider>
-                                                <RefineContextProvider
-                                                    mutationMode={mutationMode}
-                                                    warnWhenUnsavedChanges={
-                                                        warnWhenUnsavedChanges
-                                                    }
-                                                    syncWithLocation={
-                                                        syncWithLocation
-                                                    }
-                                                    Title={Title}
-                                                    undoableTimeout={
-                                                        undoableTimeout
-                                                    }
-                                                    catchAll={catchAll}
-                                                    DashboardPage={
-                                                        DashboardPage
-                                                    }
-                                                    LoginPage={LoginPage}
-                                                    Layout={Layout}
-                                                    Sider={Sider}
-                                                    Footer={Footer}
-                                                    Header={Header}
-                                                    OffLayoutArea={
-                                                        OffLayoutArea
-                                                    }
-                                                    hasDashboard={
-                                                        !!DashboardPage
-                                                    }
-                                                    liveMode={liveMode}
-                                                    onLiveEvent={onLiveEvent}
-                                                >
-                                                    <UnsavedWarnContextProvider>
-                                                        <>
-                                                            {children}
-                                                            {RouterComponent ? (
-                                                                <RouterComponent>
-                                                                    <RouteChangeHandler />
-                                                                </RouterComponent>
-                                                            ) : (
+                                            <AuditLogContextProvider
+                                                {...(auditLogProvider ?? {})}
+                                            >
+                                                <UndoableQueueContextProvider>
+                                                    <RefineContextProvider
+                                                        mutationMode={
+                                                            optionsWithDefaults.mutationMode
+                                                        }
+                                                        warnWhenUnsavedChanges={
+                                                            optionsWithDefaults.warnWhenUnsavedChanges
+                                                        }
+                                                        syncWithLocation={
+                                                            optionsWithDefaults.syncWithLocation
+                                                        }
+                                                        Title={Title}
+                                                        undoableTimeout={
+                                                            optionsWithDefaults.undoableTimeout
+                                                        }
+                                                        catchAll={catchAll}
+                                                        DashboardPage={
+                                                            DashboardPage
+                                                        }
+                                                        LoginPage={LoginPage}
+                                                        Layout={Layout}
+                                                        Sider={Sider}
+                                                        Footer={Footer}
+                                                        Header={Header}
+                                                        OffLayoutArea={
+                                                            OffLayoutArea
+                                                        }
+                                                        hasDashboard={
+                                                            !!DashboardPage
+                                                        }
+                                                        liveMode={
+                                                            optionsWithDefaults.liveMode
+                                                        }
+                                                        onLiveEvent={
+                                                            onLiveEvent
+                                                        }
+                                                        options={
+                                                            optionsWithDefaults
+                                                        }
+                                                    >
+                                                        <UnsavedWarnContextProvider>
+                                                            <RouterComponent>
+                                                                {children}
+                                                                {!disableTelemetryWithDefault && (
+                                                                    <Telemetry />
+                                                                )}
                                                                 <RouteChangeHandler />
-                                                            )}
-                                                        </>
-                                                    </UnsavedWarnContextProvider>
-                                                </RefineContextProvider>
-                                            </UndoableQueueContextProvider>
+                                                            </RouterComponent>
+                                                        </UnsavedWarnContextProvider>
+                                                    </RefineContextProvider>
+                                                </UndoableQueueContextProvider>
+                                            </AuditLogContextProvider>
                                         </AccessControlContextProvider>
                                     </TranslationContextProvider>
                                 </ResourceContextProvider>
@@ -228,11 +313,13 @@ export const Refine: React.FC<RefineProps> = ({
                     </DataContextProvider>
                 </AuthContextProvider>
             </NotificationContextProvider>
-            <ReactQueryDevtools
-                initialIsOpen={false}
-                position="bottom-right"
-                {...reactQueryDevtoolConfig}
-            />
+            {reactQueryWithDefaults.devtoolConfig === false ? null : (
+                <ReactQueryDevtools
+                    initialIsOpen={false}
+                    position="bottom-right"
+                    {...reactQueryWithDefaults.devtoolConfig}
+                />
+            )}
         </QueryClientProvider>
     );
 };

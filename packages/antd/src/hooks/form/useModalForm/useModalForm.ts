@@ -15,6 +15,8 @@ import {
     UseFormProps as UseFormPropsCore,
     BaseRecord,
     LiveModeProps,
+    BaseKey,
+    userFriendlyResourceName,
 } from "@pankod/refine-core";
 import { useForm, UseFormProps, UseFormReturnType } from "../useForm";
 import { useModalFormFromSFReturnType } from "../../../types/sunflower";
@@ -104,6 +106,10 @@ export const useModalForm = <
             if (isSuccessMutation && !isLoadingMutation) {
                 close();
                 resetMutation?.();
+                // Prevents resetting form values before closing modal in UI
+                setTimeout(() => {
+                    form.resetFields();
+                });
             }
         }
     }, [isSuccessMutation, isLoadingMutation]);
@@ -115,6 +121,10 @@ export const useModalForm = <
 
             if (!(mutationMode === "pessimistic")) {
                 close();
+                // Prevents resetting form values before closing modal in UI
+                setTimeout(() => {
+                    form.resetFields();
+                });
             }
         },
         loading: formLoading,
@@ -147,7 +157,7 @@ export const useModalForm = <
         sunflowerUseModal.close();
     }, [warnWhen]);
 
-    const handleShow = useCallback((id?: string) => {
+    const handleShow = useCallback((id?: BaseKey) => {
         setId?.(id);
 
         sunflowerUseModal.show();
@@ -160,6 +170,7 @@ export const useModalForm = <
         close: handleClose,
         formProps: {
             ...modalFormProps,
+            ...useFormProps.formProps,
             onValuesChange: formProps?.onValuesChange,
             onKeyUp: formProps?.onKeyUp,
             onFinish: formProps?.onFinish,
@@ -179,11 +190,8 @@ export const useModalForm = <
             cancelText: translate("buttons.cancel", "Cancel"),
             onCancel: handleClose,
             getContainer: false,
+            forceRender: true,
         },
         formLoading,
     };
 };
-
-function userFriendlyResourceName(arg0: string, arg1: string) {
-    return arg0;
-}

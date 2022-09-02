@@ -1,7 +1,7 @@
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook, waitFor } from "@testing-library/react";
 import ReactRouterDom from "react-router-dom";
 
-import { TestWrapper } from "@test";
+import { TestWrapper, act } from "@test";
 
 import { useLogin } from "./";
 
@@ -15,18 +15,23 @@ jest.mock("react-router-dom", () => ({
 describe("useLogin Hook", () => {
     beforeEach(() => {
         mHistory.mockReset();
+        jest.spyOn(console, "error").mockImplementation((message) => {
+            if (message?.message === "Wrong email") return;
+            if (typeof message === "undefined") return;
+            console.warn(message);
+        });
     });
 
     it("succeed login", async () => {
-        const { result, waitFor } = renderHook(() => useLogin(), {
+        const { result } = renderHook(() => useLogin(), {
             wrapper: TestWrapper({
                 authProvider: {
-                    login: ({ username }) => {
-                        if (username === "test") {
+                    login: ({ email }) => {
+                        if (email === "test") {
                             return Promise.resolve();
                         }
 
-                        return Promise.reject(new Error("Wrong username"));
+                        return Promise.reject(new Error("Wrong email"));
                     },
                     checkAuth: () => Promise.resolve(),
                     checkError: () => Promise.resolve(),
@@ -37,27 +42,29 @@ describe("useLogin Hook", () => {
             }),
         });
 
-        const { mutate: login } = result.current!;
+        const { mutate: login } = result.current ?? { mutate: () => 0 };
 
-        await login({ username: "test" });
+        await act(async () => {
+            login({ email: "test" });
+        });
 
         await waitFor(() => {
-            return !result.current?.isLoading;
+            expect(result.current.isSuccess).toBeTruthy();
         });
 
         expect(mHistory).toBeCalledWith("/", { replace: true });
     });
 
     it("should successfully login with no redirect", async () => {
-        const { result, waitFor } = renderHook(() => useLogin(), {
+        const { result } = renderHook(() => useLogin(), {
             wrapper: TestWrapper({
                 authProvider: {
-                    login: ({ username }) => {
-                        if (username === "test") {
+                    login: ({ email }) => {
+                        if (email === "test") {
                             return Promise.resolve(false);
                         }
 
-                        return Promise.reject(new Error("Wrong username"));
+                        return Promise.reject(new Error("Wrong email"));
                     },
                     checkAuth: () => Promise.resolve(),
                     checkError: () => Promise.resolve(),
@@ -68,27 +75,29 @@ describe("useLogin Hook", () => {
             }),
         });
 
-        const { mutate: login } = result.current!;
+        const { mutate: login } = result.current ?? { mutate: () => 0 };
 
-        await login({ username: "test" });
+        await act(async () => {
+            login({ email: "test" });
+        });
 
         await waitFor(() => {
-            return !result.current?.isLoading;
+            expect(result.current.isSuccess).toBeTruthy();
         });
 
         expect(mHistory).not.toBeCalled();
     });
 
     it("login and redirect to custom path", async () => {
-        const { result, waitFor } = renderHook(() => useLogin(), {
+        const { result } = renderHook(() => useLogin(), {
             wrapper: TestWrapper({
                 authProvider: {
-                    login: ({ username, redirectPath }) => {
-                        if (username === "test") {
+                    login: ({ email, redirectPath }) => {
+                        if (email === "test") {
                             return Promise.resolve(redirectPath);
                         }
 
-                        return Promise.reject(new Error("Wrong username"));
+                        return Promise.reject(new Error("Wrong email"));
                     },
                     checkAuth: () => Promise.resolve(),
                     checkError: () => Promise.resolve(),
@@ -99,27 +108,29 @@ describe("useLogin Hook", () => {
             }),
         });
 
-        const { mutate: login } = result.current!;
+        const { mutate: login } = result.current ?? { mutate: () => 0 };
 
-        await login({ username: "test", redirectPath: "/custom-path" });
+        await act(async () => {
+            login({ email: "test", redirectPath: "/custom-path" });
+        });
 
         await waitFor(() => {
-            return !result.current?.isLoading;
+            expect(result.current.isSuccess).toBeTruthy();
         });
 
         expect(mHistory).toBeCalledWith("/custom-path", { replace: true });
     });
 
     it("If URL has 'to' params the app will redirect to 'to' values", async () => {
-        const { result, waitFor } = renderHook(() => useLogin(), {
+        const { result } = renderHook(() => useLogin(), {
             wrapper: TestWrapper({
                 authProvider: {
-                    login: ({ username, redirectPath }) => {
-                        if (username === "test") {
+                    login: ({ email, redirectPath }) => {
+                        if (email === "test") {
                             return Promise.resolve(redirectPath);
                         }
 
-                        return Promise.reject(new Error("Wrong username"));
+                        return Promise.reject(new Error("Wrong email"));
                     },
                     checkAuth: () => Promise.resolve(),
                     checkError: () => Promise.resolve(),
@@ -131,22 +142,24 @@ describe("useLogin Hook", () => {
             }),
         });
 
-        const { mutate: login } = result.current!;
+        const { mutate: login } = result.current ?? { mutate: () => 0 };
 
-        await login({ username: "test", redirectPath: "/custom-path" });
+        await act(async () => {
+            login({ email: "test", redirectPath: "/custom-path" });
+        });
 
         await waitFor(() => {
-            return !result.current?.isLoading;
+            expect(result.current.isSuccess).toBeTruthy();
         });
 
         expect(mHistory).toBeCalledWith("/show/posts/5", { replace: true });
     });
 
     it("fail login", async () => {
-        const { result, waitFor } = renderHook(() => useLogin(), {
+        const { result } = renderHook(() => useLogin(), {
             wrapper: TestWrapper({
                 authProvider: {
-                    login: () => Promise.reject(new Error("Wrong username")),
+                    login: () => Promise.reject(new Error("Wrong email")),
                     checkAuth: () => Promise.resolve(),
                     checkError: () => Promise.resolve(),
                     getPermissions: () => Promise.resolve(),
@@ -156,21 +169,23 @@ describe("useLogin Hook", () => {
             }),
         });
 
-        const { mutate: login } = result.current!;
+        const { mutate: login } = result.current ?? { mutate: () => 0 };
 
-        await login({ username: "demo" });
-
-        await waitFor(() => {
-            return !result.current?.isLoading;
+        await act(async () => {
+            login({ email: "demo" });
         });
 
-        const { error } = result.current!;
+        await waitFor(() => {
+            expect(result.current.isError).toBeTruthy();
+        });
 
-        expect(error).toEqual(new Error("Wrong username"));
+        const { error } = result.current ?? { error: undefined };
+
+        expect(error).toEqual(new Error("Wrong email"));
     });
 
     it("login rejected with undefined error", async () => {
-        const { result, waitFor } = renderHook(() => useLogin(), {
+        const { result } = renderHook(() => useLogin(), {
             wrapper: TestWrapper({
                 authProvider: {
                     login: () => Promise.reject(),
@@ -183,15 +198,17 @@ describe("useLogin Hook", () => {
             }),
         });
 
-        const { mutate: login } = result.current!;
+        const { mutate: login } = result.current ?? { mutate: () => 0 };
 
-        await login({ username: "demo" });
-
-        await waitFor(() => {
-            return !result.current?.isLoading;
+        await act(async () => {
+            login({ email: "demo" });
         });
 
-        const { error } = result.current!;
+        await waitFor(() => {
+            expect(result.current.isError).toBeTruthy();
+        });
+
+        const { error } = result.current ?? { error: undefined };
 
         expect(error).not.toBeDefined();
     });

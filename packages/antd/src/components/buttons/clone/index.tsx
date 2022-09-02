@@ -5,21 +5,23 @@ import {
     useCan,
     useNavigation,
     useTranslate,
-    BaseKey,
     useResource,
     useRouterContext,
 } from "@pankod/refine-core";
+import {
+    RefineCloneButtonProps,
+    RefineButtonTestIds,
+} from "@pankod/refine-ui-types";
 
-export type CloneButtonProps = ButtonProps & {
-    /**
-     * @deprecated resourceName deprecated. Use resourceNameOrRouteName instead # https://github.com/pankod/refine/issues/1618
-     */
-    resourceName?: string;
-    resourceNameOrRouteName?: string;
-    recordItemId?: BaseKey;
-    hideText?: boolean;
-    ignoreAccessControlProvider?: boolean;
-};
+export type CloneButtonProps = RefineCloneButtonProps<
+    ButtonProps,
+    {
+        /**
+         * @deprecated resourceName deprecated. Use resourceNameOrRouteName instead # https://github.com/pankod/refine/issues/1618
+         */
+        resourceName?: string;
+    }
+>;
 
 /**
  * `<CloneButton>` uses Ant Design's {@link https://ant.design/components/button/ `<Button> component`}.
@@ -38,7 +40,7 @@ export const CloneButton: React.FC<CloneButtonProps> = ({
     onClick,
     ...rest
 }) => {
-    const { cloneUrl } = useNavigation();
+    const { cloneUrl: generateCloneUrl } = useNavigation();
     const { Link } = useRouterContext();
 
     const translate = useTranslate();
@@ -52,7 +54,7 @@ export const CloneButton: React.FC<CloneButtonProps> = ({
     const { data } = useCan({
         resource: resourceName,
         action: "create",
-        params: { id },
+        params: { id, resource },
         queryOptions: {
             enabled: !ignoreAccessControlProvider,
         },
@@ -68,9 +70,11 @@ export const CloneButton: React.FC<CloneButtonProps> = ({
             );
     };
 
+    const cloneUrl = generateCloneUrl(propResourceName ?? resource.route!, id!);
+
     return (
         <Link
-            to={cloneUrl(propResourceName ?? resource.route!, id!)}
+            to={cloneUrl}
             replace={false}
             onClick={(e: React.MouseEvent<HTMLElement, MouseEvent>) => {
                 if (onClick) {
@@ -83,6 +87,7 @@ export const CloneButton: React.FC<CloneButtonProps> = ({
                 icon={<PlusSquareOutlined />}
                 disabled={data?.can === false}
                 title={createButtonDisabledTitle()}
+                data-testid={RefineButtonTestIds.CloneButton}
                 {...rest}
             >
                 {!hideText && (children ?? translate("buttons.clone", "Clone"))}

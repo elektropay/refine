@@ -1,9 +1,11 @@
 import React from "react";
-import { LayoutWrapper } from "@components/layoutWrapper";
-import { IRefineContextProvider } from "../../contexts/refine/IRefineContext";
-import { render, TestWrapper, MockJSONServer } from "@test";
 import { Route, Routes } from "react-router-dom";
 import "@testing-library/jest-dom/extend-expect";
+
+import { LayoutWrapper } from "@components/layoutWrapper";
+import { render, TestWrapper, MockJSONServer } from "@test";
+import { defaultRefineOptions } from "@contexts/refine";
+import { IRefineContextProvider } from "../../contexts/refine/IRefineContext";
 import { LayoutProps } from "../../interfaces";
 
 const renderWithRefineContext = (
@@ -62,19 +64,22 @@ describe("LayoutWrapper", () => {
             );
         };
 
-        const { getByText } = renderWithRefineContext(<LayoutWrapper />, {
-            warnWhenUnsavedChanges: false,
-            mutationMode: "pessimistic",
-            syncWithLocation: false,
-            undoableTimeout: 5000,
-            hasDashboard: false,
-            Layout: CustomLayout,
-            Sider: CustomSider,
-            Header: CustomHeader,
-            Footer: CustomFooter,
-            OffLayoutArea: CustomOffLayoutArea,
-            Title: CustomTitle,
-        });
+        const { getByText } = renderWithRefineContext(
+            <LayoutWrapper>
+                <div>test </div>
+            </LayoutWrapper>,
+            {
+                hasDashboard: false,
+                Layout: CustomLayout,
+                Sider: CustomSider,
+                Header: CustomHeader,
+                Footer: CustomFooter,
+                OffLayoutArea: CustomOffLayoutArea,
+                Title: CustomTitle,
+                ...defaultRefineOptions,
+                options: defaultRefineOptions,
+            },
+        );
 
         getByText(customSiderContent);
         getByText(customHeaderContent);
@@ -99,18 +104,21 @@ describe("LayoutWrapper", () => {
         const customTitleContent = "customTitleContent";
         const CustomTitle = () => <p>{customTitleContent}</p>;
 
-        const { queryByText } = renderWithRefineContext(<LayoutWrapper />, {
-            warnWhenUnsavedChanges: false,
-            mutationMode: "pessimistic",
-            syncWithLocation: false,
-            undoableTimeout: 5000,
-            hasDashboard: false,
-            Sider: CustomSider,
-            Header: CustomHeader,
-            Footer: CustomFooter,
-            OffLayoutArea: CustomOffLayoutArea,
-            Title: CustomTitle,
-        });
+        const { queryByText } = renderWithRefineContext(
+            <LayoutWrapper>
+                <div>test </div>
+            </LayoutWrapper>,
+            {
+                hasDashboard: false,
+                Sider: CustomSider,
+                Header: CustomHeader,
+                Footer: CustomFooter,
+                OffLayoutArea: CustomOffLayoutArea,
+                Title: CustomTitle,
+                ...defaultRefineOptions,
+                options: defaultRefineOptions,
+            },
+        );
 
         expect(queryByText(customSiderContent)).toBeNull();
         expect(queryByText(customHeaderContent)).toBeNull();
@@ -160,12 +168,12 @@ describe("LayoutWrapper", () => {
                 Header={CustomHeader}
                 Footer={CustomFooter}
                 OffLayoutArea={CustomOffLayoutArea}
-            />,
+            >
+                <div>test</div>
+            </LayoutWrapper>,
             {
-                warnWhenUnsavedChanges: false,
-                mutationMode: "pessimistic",
-                syncWithLocation: false,
-                undoableTimeout: 5000,
+                ...defaultRefineOptions,
+                options: defaultRefineOptions,
                 hasDashboard: false,
             },
         );
